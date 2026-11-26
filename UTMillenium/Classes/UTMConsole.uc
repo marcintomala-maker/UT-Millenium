@@ -13,6 +13,8 @@ var string OutroURL;
 var string LastLevel;
 var int    ScreenMode;        // 1 = portrait window, 2 = borderless fullscreen
 var bool   bMatchPaused;      // menu opened from a running match
+var bool   bBriefing;         // pre-match board is up
+var float  BriefingAge;
 
 const MODE_LOADING = -1;
 const MODE_MENU = 0;
@@ -51,6 +53,12 @@ event Tick( float Delta )
 
 	if ( Viewport == None || Viewport.Actor == None || Viewport.Actor.Level == None )
 		return;
+	if ( bBriefing )
+		BriefingAge += Delta;
+	// switching from fullscreen back to the window can hide the mouse:
+	// keep it on while any menu is open
+	if ( bUWindowActive && !bQuickKeyEnable )
+		Viewport.bShowWindowsMouse = true;
 	Lvl = string(Viewport.Actor.Level);
 	if ( Lvl == LastLevel )
 		return;
@@ -63,19 +71,32 @@ event Tick( float Delta )
 
 function EnterLevel(int M)
 {
+	Log("UTM EnterLevel mode="$M$" level="$Viewport.Actor.Level);
 	bLocked = false;
 	switch ( M )
 	{
 		case MODE_MENU:
 			bMatchPaused = false;
+			bBriefing = false;
 			SetPortrait();
 			bQuickKeyEnable = false;
 			LaunchUWindow();
 			ApplyMute();
 			break;
 		case MODE_MATCH:
+			bMatchPaused = false;
+			SetBorderless();
+			// pre-match board; the game stays paused until a click
+			bBriefing = true;
+			BriefingAge = 0;
+			bQuickKeyEnable = false;
+			Super.LaunchUWindow();
+			bLocked = false;
+			bNoDrawWorld = true;
+			break;
 		case MODE_CINEMATIC:
 			bMatchPaused = false;
+			bBriefing = false;
 			SetBorderless();
 			if ( bUWindowActive || IsInState('UWindow') )
 			{
@@ -231,6 +252,33 @@ function PlayCinematic(bool bOutro)
 		Viewport.Actor.ClientTravel(OutroURL, TRAVEL_Absolute, false);
 	else
 		Viewport.Actor.ClientTravel(IntroURL, TRAVEL_Absolute, false);
+}
+
+function FinishBriefing()
+{
+	if ( !bBriefing || BriefingAge < 0.6 )
+		return;
+	Log("UTM FinishBriefing age="$BriefingAge);
+	bBriefing = false;
+	bQuickKeyEnable = false;
+	Super.CloseUWindow();
+	bNoDrawWorld = false;
+}
+
+state UWindow
+{
+	event bool KeyEvent( EInputKey Key, EInputAction Action, FLOAT Delta )
+	{
+		if ( bBriefing )
+		{
+			if ( Action == IST_Press )
+				FinishBriefing();
+			if ( Action == IST_Axis )
+				return Super.KeyEvent(Key, Action, Delta);   // keep the cursor moving
+			return true;
+		}
+		return Super.KeyEvent(Key, Action, Delta);
+	}
 }
 
 function ResumeMatch()

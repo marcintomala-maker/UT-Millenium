@@ -121,7 +121,7 @@ defaultproperties
 	ModeOn(1)=1
 	ModeOn(2)=1
 	ModeOn(3)=1
-	ModeOn(4)=1
+	ModeOn(4)=0
 	ModeOn(5)=0
 	PortraitX=450
 	PortraitY=800

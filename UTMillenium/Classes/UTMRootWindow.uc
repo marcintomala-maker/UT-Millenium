@@ -6,6 +6,7 @@
 class UTMRootWindow extends UMenuRootWindow;
 
 var UTMMainWindow MainWin;
+var UTMBriefingWindow Briefing;
 
 function Created()
 {
@@ -41,11 +42,35 @@ function Resized()
 		MainWin.WinTop = 0;
 		MainWin.SetSize(WinWidth, WinHeight);
 	}
+	if ( Briefing != None )
+	{
+		Briefing.WinLeft = 0;
+		Briefing.WinTop = 0;
+		Briefing.SetSize(WinWidth, WinHeight);
+	}
 }
 
-function BeforePaint(Canvas C, float X, float Y)
+// (the root window never gets BeforePaint, so Paint calls this)
+function UpdateVisibility()
 {
-	Super.BeforePaint(C, X, Y);
+
+	// pre-match board
+	if ( UTMConsole(Console) != None && UTMConsole(Console).bBriefing )
+	{
+		if ( Briefing == None )
+		{
+			Briefing = UTMBriefingWindow(CreateWindow(class'UTMBriefingWindow', 0, 0, WinWidth, WinHeight));
+			Briefing.BringToFront();
+		}
+		if ( MainWin != None && MainWin.bWindowVisible )
+			MainWin.HideWindow();
+		return;
+	}
+	else if ( Briefing != None )
+	{
+		Briefing.Close();
+		Briefing = None;
+	}
 	if ( MainWin == None )
 		return;
 	// The speech menu (V) and the console (~) use the window system in-game:
@@ -64,6 +89,7 @@ function BeforePaint(Canvas C, float X, float Y)
 
 function Paint(Canvas C, float MouseX, float MouseY)
 {
+	UpdateVisibility();
 	if ( Console.bNoDrawWorld )
 		DrawStretchedTexture(C, 0, 0, WinWidth, WinHeight, Texture'UMenu.MenuBlack');
 }
