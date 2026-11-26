@@ -27,18 +27,6 @@ function Created()
 	Add(0, "UT MILLENIUM");
 	Add(1, "Idea and Mod Design");
 	Add(2, "Marcin Tomala");
-	Add(1, "Mod Programming");
-	Add(2, "Claude (Anthropic)");
-	Add(4, "");
-
-	Add(0, "UNREAL TOURNAMENT");
-	Add(2, "Game of the Year Edition. Developed by Epic Games and Digital Extremes. (c) 1999, 2000 Epic Games, Inc.");
-	Add(3, "credits.Wall.Credit_1");
-	Add(3, "credits.Wall.Credit_2");
-	Add(3, "credits.Wall.Credit_3");
-	Add(3, "credits.Wall.Credit_4");
-	Add(3, "credits.Wall.Credit_5");
-	Add(3, "credits.Wall.Credit_6");
 	Add(4, "");
 
 	Add(0, "OLDUNREAL PATCH 469e");
@@ -53,7 +41,21 @@ function Created()
 	Add(2, "OpenAL Soft (kcat), mpg123 (Michael Hipp and others), libogg (Xiph.Org Foundation), libxmp, libsndfile, FMOD, musl libc (Rich Felker), SDL2 and SDL2_ttf (Sam Lantinga and others)");
 	Add(4, "");
 
+	Add(0, "UNREAL TOURNAMENT");
+	Add(2, "Game of the Year Edition. Developed by Epic Games and Digital Extremes. (c) 1999, 2000 Epic Games, Inc.");
+	Add(3, "credits.Wall.Credit_1");
+	Add(3, "credits.Wall.Credit_2");
+	Add(3, "credits.Wall.Credit_3");
+	Add(3, "credits.Wall.Credit_4");
+	Add(3, "credits.Wall.Credit_5");
+	Add(3, "credits.Wall.Credit_6");
+	Add(4, "");
+
 	Add(2, "Unreal and Unreal Tournament are trademarks of Epic Games, Inc. UT Millenium is a free fan mod. It needs your own copy of Unreal Tournament and is not made or endorsed by Epic Games.");
+	Add(4, "");
+
+	Add(1, "Mod Programming");
+	Add(2, "Claude (Anthropic)");
 
 	DesiredWidth = 300;
 	DesiredHeight = 2000;

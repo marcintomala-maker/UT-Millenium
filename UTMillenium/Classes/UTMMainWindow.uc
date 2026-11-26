@@ -14,7 +14,6 @@ var string TipText;
 var float S, OX, OY;
 
 var Texture LogoTex[3], BackTex, TrophyTex;
-var Texture PanelTex[6];
 var Font HugeFont;
 
 var localized string TierText[3];
@@ -95,13 +94,6 @@ function Created()
 	LogoTex[2] = Texture(DynamicLoadObject("Logo.UTLogo3", class'Texture'));
 	BackTex    = Texture(DynamicLoadObject("MenuGr.rmetal", class'Texture'));
 	TrophyTex  = Texture(DynamicLoadObject("UTMenu.Skins.TrophyChal", class'Texture'));
-	// right half of the Tournament's character select screen: a tall metal panel
-	PanelTex[0] = Texture(DynamicLoadObject("UTMenu.Skins.Sel13", class'Texture'));
-	PanelTex[1] = Texture(DynamicLoadObject("UTMenu.Skins.Sel14", class'Texture'));
-	PanelTex[2] = Texture(DynamicLoadObject("UTMenu.Skins.Sel23", class'Texture'));
-	PanelTex[3] = Texture(DynamicLoadObject("UTMenu.Skins.Sel24", class'Texture'));
-	PanelTex[4] = Texture(DynamicLoadObject("UTMenu.Skins.Sel33", class'Texture'));
-	PanelTex[5] = Texture(DynamicLoadObject("UTMenu.Skins.Sel34", class'Texture'));
 }
 
 function Place(UWindowWindow W, float X, float Y, float Wd, float Ht)
@@ -228,27 +220,20 @@ function Paint(Canvas C, float X, float Y)
 	// background
 	SetColor(C, 255, 255, 255);
 	DrawStretchedTexture(C, 0, 0, WinWidth, WinHeight, Texture'UMenu.MenuBlack');
-	if ( PanelTex[0] != None )
-	{
-		SetColor(C, 255, 255, 255);
-		for ( i = 0; i < 6; i++ )
-			DrawStretchedTexture(C, OX + (i % 2) * 180*S, OY + (i / 2) * (640.0/3.0)*S, 180*S + 1, (640.0/3.0)*S + 1, PanelTex[i]);
-	}
-	else if ( BackTex != None )
+	if ( BackTex != None )
 	{
 		SetColor(C, 90, 90, 90);
 		DrawStretchedTexture(C, OX, OY, 360*S, 640*S, BackTex);
 	}
 
 	// logo (three 256x256 pieces side by side)
-	DrawBox(C, 16, 4, 328, 114, 0);
 	SetColor(C, 255, 255, 255);
 	for ( i = 0; i < 3; i++ )
 		if ( LogoTex[i] != None )
-			DrawStretchedTexture(C, OX + (36 + i*96)*S, OY + 5*S, 96*S, 90*S, LogoTex[i]);
+			DrawStretchedTexture(C, OX + (36 + i*96)*S, OY + 2*S, 96*S, 96*S, LogoTex[i]);
 
 	SetColor(C, 255, 190, 0);
-	DrawCentered(C, "MILLENIUM", 180, 90, 24);
+	DrawCentered(C, "MILLENIUM", 180, 92, 24);
 
 	// the big one: winning streak
 	DrawBox(C, 16, 124, 328, 98, 40);
