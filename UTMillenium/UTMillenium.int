@@ -1,0 +1,4 @@
+[Public]
+Object=(Name=UTMillenium.UTMChainsawZombies,Class=Class,MetaClass=Engine.Mutator,Description="Chainsaw Zombies,Enemy bots only carry the Chainsaw and can't pick up other weapons.")
+Object=(Name=UTMillenium.UTMHammerZombies,Class=Class,MetaClass=Engine.Mutator,Description="Impact Hammer Zombies,Enemy bots only carry the Impact Hammer and can't pick up other weapons.")
+Object=(Name=UTMillenium.UTMOneManArmy,Class=Class,MetaClass=Engine.Mutator,Description="One Man Army,Team games: you are alone on your team and every bot plays against you.")
