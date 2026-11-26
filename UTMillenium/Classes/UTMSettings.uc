@@ -6,8 +6,9 @@ class UTMSettings extends Object
 	config(UTMillenium);
 
 // Main menu toggles
-var config bool   bOrigSpeed;      // false = everybody moves 15% slower
+var config bool   bOrigSpeed;      // false = everybody moves 10% slower
 var config bool   bMaxBots;        // true  = fill the map to its maximum player count
+var config bool   bJustTwoTeams;   // true  = TDM / Domination always use 2 teams
 
 // Sound
 var config bool   bMuted;

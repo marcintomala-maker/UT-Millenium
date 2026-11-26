@@ -7,7 +7,7 @@ class UTMMainWindow extends UWindowDialogClientWindow;
 var UTMPlateButton BtnTier[3];
 var UTMPlateButton BtnSettings, BtnCredits, BtnIntro, BtnOutro;
 var UTMPlateButton BtnMute, BtnExit, BtnReset, BtnAddMaps;
-var UTMCheck ChkSpeed, ChkMaxBots;
+var UTMCheck ChkSpeed, ChkMaxBots, ChkTwoTeams;
 var UWindowMessageBox ResetBox, NoMapsBox, AddMapsBox;
 
 var string TipText;
@@ -18,7 +18,7 @@ var Texture LogoTex[3], BackTex, TrophyTex;
 var Font HugeFont;
 
 var localized string TierText[3];
-var localized string SpeedText, SpeedTip, MaxBotsText, MaxBotsTip;
+var localized string SpeedText, SpeedTip, MaxBotsText, MaxBotsTip, TwoTeamsText, TwoTeamsTip;
 var localized string SettingsText, CreditsText, IntroText, OutroText;
 var localized string MuteText, UnmuteText, ExitText, ResetText;
 var localized string ResetTitle, ResetQuestion, NoMapsTitle, NoMapsText;
@@ -80,6 +80,7 @@ function Created()
 
 	ChkSpeed   = MakeCheck(SpeedText,   class'UTMSettings'.default.bOrigSpeed);
 	ChkMaxBots = MakeCheck(MaxBotsText, class'UTMSettings'.default.bMaxBots);
+	ChkTwoTeams = MakeCheck(TwoTeamsText, class'UTMSettings'.default.bJustTwoTeams);
 
 	BtnSettings = MakeButton(SettingsText);
 	BtnCredits  = MakeButton(CreditsText);
@@ -118,13 +119,14 @@ function BeforePaint(Canvas C, float X, float Y)
 	for ( i = 0; i < 3; i++ )
 		Place(BtnTier[i], 70, 318 + i * 46, 220, 42);
 
-	Place(ChkSpeed,   100, 458, 170, 16);
-	Place(ChkMaxBots, 100, 478, 170, 16);
+	Place(ChkSpeed,    100, 455, 170, 16);
+	Place(ChkMaxBots,  100, 473, 170, 16);
+	Place(ChkTwoTeams, 100, 491, 170, 16);
 
-	Place(BtnSettings, 24, 502, 152, 38);
-	Place(BtnCredits, 184, 502, 152, 38);
-	Place(BtnIntro,    24, 546, 152, 38);
-	Place(BtnOutro,   184, 546, 152, 38);
+	Place(BtnSettings, 24, 514, 152, 36);
+	Place(BtnCredits, 184, 514, 152, 36);
+	Place(BtnIntro,    24, 556, 152, 36);
+	Place(BtnOutro,   184, 556, 152, 36);
 	Place(BtnMute,     24, 600, 100, 28);
 	Place(BtnExit,    236, 600, 100, 28);
 	Place(BtnAddMaps, 130, 600, 100, 28);
@@ -366,10 +368,12 @@ function Notify(UWindowDialogControl C, byte E)
 			TipText = SpeedTip;
 		else if ( C == ChkMaxBots )
 			TipText = MaxBotsTip;
+		else if ( C == ChkTwoTeams )
+			TipText = TwoTeamsTip;
 		break;
 
 	case DE_MouseLeave:
-		if ( C == ChkSpeed || C == ChkMaxBots )
+		if ( C == ChkSpeed || C == ChkMaxBots || C == ChkTwoTeams )
 			TipText = "";
 		break;
 
@@ -384,6 +388,11 @@ function Notify(UWindowDialogControl C, byte E)
 		else if ( C == ChkMaxBots )
 		{
 			class'UTMSettings'.default.bMaxBots = ChkMaxBots.bChecked;
+			class'UTMSettings'.static.Save();
+		}
+		else if ( C == ChkTwoTeams )
+		{
+			class'UTMSettings'.default.bJustTwoTeams = ChkTwoTeams.bChecked;
 			class'UTMSettings'.static.Save();
 		}
 		break;
@@ -448,9 +457,11 @@ defaultproperties
 	TierText(1)="MEDIUM"
 	TierText(2)="HARD"
 	SpeedText="Original Move Speed"
-	SpeedTip="Off: you and the bots move 15% slower than in original UT (dodges stay original). On: original UT speed."
+	SpeedTip="Off: you and the bots move 10% slower than in original UT (dodges stay original). On: original UT speed."
 	MaxBotsText="Max Bots"
 	MaxBotsTip="Off: bots fill the map's recommended player count. On: the map is filled with bots up to its maximum."
+	TwoTeamsText="Just Two Teams"
+	TwoTeamsTip="Team Deathmatch and Domination can have 2, 3 or 4 teams. Tick this and only two teams will play."
 	SettingsText="SETTINGS"
 	CreditsText="CREDITS"
 	IntroText="PLAY INTRO"

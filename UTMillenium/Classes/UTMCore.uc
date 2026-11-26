@@ -3,13 +3,13 @@
 // Spawned by every UTMGame* class. Handles:
 //  - bot count (map's recommended or max player count)
 //  - bots with random factions, names, skins and per-bot random difficulty
-//  - 15% slower movement (dodge distance stays original)
+//  - 10% slower movement (dodge distance stays original)
 //  - stats (kills, deaths, captures, wins, losses)
 //  - returning to the main menu when the match is over
 //=============================================================================
 class UTMCore extends Mutator;
 
-const SlowFactor = 0.85;
+const SlowFactor = 0.90;
 
 var DeathMatchPlus G;
 var int  Tier;                         // 0 = easy, 1 = medium, 2 = hard
@@ -19,8 +19,8 @@ var bool bResultRecorded;
 var bool bLeaving;
 
 var class<RatedTeamInfo> Factions[9];
-var int  TeamFaction[2];               // index into Factions for red / blue
-var int  NextMember[2];
+var int  TeamFaction[4];               // index into Factions for red / blue / green / gold
+var int  NextMember[4];
 var string UsedNames;
 
 var PlayerPawn Human;
@@ -44,11 +44,28 @@ static function UTMCore Install(DeathMatchPlus Game, string Options)
 
 function PickFactions()
 {
-	TeamFaction[0] = Rand(9);
-	TeamFaction[1] = Rand(8);
-	if ( TeamFaction[1] >= TeamFaction[0] )
-		TeamFaction[1]++;
+	local int i, j, Tmp, Order[9];
+
+	// shuffle the 9 factions, first four go to red, blue, green, gold
+	for ( i = 0; i < 9; i++ )
+		Order[i] = i;
+	for ( i = 8; i > 0; i-- )
+	{
+		j = Rand(i + 1);
+		Tmp = Order[i];
+		Order[i] = Order[j];
+		Order[j] = Tmp;
+	}
+	for ( i = 0; i < 4; i++ )
+		TeamFaction[i] = Order[i];
 	UsedNames = "|";
+}
+
+function int NumTeams()
+{
+	if ( !G.bTeamGame )
+		return 0;
+	return Clamp(TeamGamePlus(G).MaxTeams, 2, 4);
 }
 
 // Called from the game's PostBeginPlay (after DeathMatchPlus set its own bot count)
@@ -110,11 +127,16 @@ function int ComputeBots()
 	else
 		Total = (Lo + Hi + 1) / 2;
 
-	// even teams look fair: player + bots split evenly
-	if ( G.bTeamGame && !bOneManArmy && (Total % 2) == 1 )
-		Total++;
-
 	Total = Clamp(Total, 2, 16);
+	// even teams look fair: player + bots split evenly, at least 2 per team
+	if ( G.bTeamGame && !bOneManArmy )
+	{
+		Total = Max(Total, 2 * NumTeams());
+		if ( Total % NumTeams() != 0 )
+			Total += NumTeams() - (Total % NumTeams());
+		while ( Total > 16 )
+			Total -= NumTeams();
+	}
 	return Total - 1;
 }
 
@@ -162,15 +184,31 @@ function float RandomSkill()
 function int PickTeam()
 {
 	local TeamGamePlus T;
+	local int i, Best, H;
 
 	T = TeamGamePlus(G);
-	if ( bOneManArmy )
-		return 1 - HumanTeam();
-	if ( T.Teams[0].Size < T.Teams[1].Size )
-		return 0;
-	if ( T.Teams[1].Size < T.Teams[0].Size )
-		return 1;
-	return 1 - HumanTeam();
+	H = HumanTeam();
+	Best = -1;
+	for ( i = 0; i < NumTeams(); i++ )
+	{
+		if ( bOneManArmy && i == H )
+			continue;
+		// on a tie prefer a team without the player
+		if ( Best < 0 || T.Teams[i].Size < T.Teams[Best].Size
+			|| (T.Teams[i].Size == T.Teams[Best].Size && Best == H) )
+			Best = i;
+	}
+	return Best;
+}
+
+function bool IsOtherTeamsFaction(class<RatedTeamInfo> F, int Team)
+{
+	local int t;
+
+	for ( t = 0; t < NumTeams(); t++ )
+		if ( t != Team && F == Factions[TeamFaction[t]] )
+			return true;
+	return false;
 }
 
 function int FactionSize(class<RatedTeamInfo> F)
@@ -193,7 +231,7 @@ function bool PickMember(int Team, out class<RatedTeamInfo> F, out int n)
 {
 	local int i, k, f0, Count;
 
-	if ( Team == 0 || Team == 1 )
+	if ( Team >= 0 && Team < 4 )
 	{
 		F = Factions[TeamFaction[Team]];
 		Count = FactionSize(F);
@@ -210,12 +248,12 @@ function bool PickMember(int Team, out class<RatedTeamInfo> F, out int n)
 	}
 
 	// Deathmatch, or the team's faction ran out: anyone not playing yet,
-	// but never someone from the other team's faction.
+	// but never someone from another team's faction.
 	f0 = Rand(9);
 	for ( i = 0; i < 9; i++ )
 	{
 		F = Factions[(f0 + i) % 9];
-		if ( (Team == 0 || Team == 1) && F == Factions[TeamFaction[1 - Team]] )
+		if ( Team >= 0 && Team < 4 && IsOtherTeamsFaction(F, Team) )
 			continue;
 		Count = FactionSize(F);
 		k = Rand(Count);
@@ -340,7 +378,7 @@ event Tick(float DeltaTime)
 	if ( H == None )
 		return;
 
-	// A player dodge launches at 1.5 x GroundSpeed. Since GroundSpeed is 15%
+	// A player dodge launches at 1.5 x GroundSpeed. Since GroundSpeed is 10%
 	// lower, undo that on the first frame of the dodge so the distance stays
 	// exactly like the original game. (Bot dodges use a fixed speed already.)
 	if ( bSlow && H.DodgeDir == DODGE_Active && LastDodge != DODGE_Active && H.Physics == PHYS_Falling )

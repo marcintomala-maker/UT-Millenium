@@ -11,7 +11,8 @@ var float Age;
 var string Lines[24];
 var int NumLines;
 
-var string ModeTitle, MapTitle, MapAuthor, MapPlayers;
+var string ModeTitle, MapTitle, MapAuthor, MapPlayers, MapFile;
+var Texture StaticTex[4];
 var Texture Shot;
 var bool bPrepared;
 
@@ -29,6 +30,8 @@ function Created()
 		Col = string(int(i % 4) + 1);
 		Tiles[i] = Texture(DynamicLoadObject("UTMenu.Skins.Ladr"$Row$Col, class'Texture'));
 	}
+	for ( i = 0; i < 4; i++ )
+		StaticTex[i] = Texture(DynamicLoadObject("LadrStatic.Static.Static_A0"$i, class'Texture'));
 }
 
 function Tick(float Delta)
@@ -56,6 +59,7 @@ function Prepare()
 	local UTMCore Core;
 	local PlayerPawn P;
 	local int MyTeam, n;
+	local string Enemies;
 
 	bPrepared = true;
 	P = GetPlayerOwner();
@@ -71,6 +75,7 @@ function Prepare()
 	if ( MapTitle == "" || MapTitle ~= "Untitled" )
 		MapTitle = string(L.Outer.Name);
 	MapAuthor = L.Author;
+	MapFile = string(L.Outer.Name)$".unr";
 	MapPlayers = L.IdealPlayerCount;
 	Shot = L.Screenshot;
 
@@ -127,12 +132,23 @@ function Prepare()
 	AddLine("");
 	if ( T != None && Core != None )
 	{
-		AddLine("You play for "$T.Teams[MyTeam].TeamName$" ("$Core.Factions[Core.TeamFaction[MyTeam]].default.TeamName$").");
+		if ( Core.NumTeams() > 2 )
+			AddLine(Core.NumTeams()$" teams in this match!");
+		AddLine("You: "$T.Teams[MyTeam].TeamName$" Team ("$Core.Factions[Core.TeamFaction[MyTeam]].default.TeamName$").");
 		if ( Core.bOneManArmy )
-			AddLine("ONE MAN ARMY: every bot is against you.");
-		else
-			AddLine("Against: "$Core.Factions[Core.TeamFaction[1 - MyTeam]].default.TeamName$".");
+			AddLine("ONE MAN ARMY: you're alone, every bot is against you.");
+		Enemies = "";
+		for ( n = 0; n < Core.NumTeams(); n++ )
+			if ( n != MyTeam )
+			{
+				if ( Enemies != "" )
+					Enemies = Enemies $ ", ";
+				Enemies = Enemies $ T.Teams[n].TeamName $ " Team (" $ Core.Factions[Core.TeamFaction[n]].default.TeamName $ ")";
+			}
+		AddLine("Enemies: "$Enemies$".");
 	}
+	else if ( Core != None )
+		AddLine("Enemies: "$(D.NumBots + D.RemainingBots)$" bots, every one for themselves.");
 	if ( Core != None )
 	{
 		switch ( Core.Tier )
@@ -165,7 +181,7 @@ function TextCentered(Canvas C, float CX, float Y, string T)
 }
 
 // word wrap Text into a column (board units); returns the new Y
-function float WrapText(Canvas C, float X, float Y, float W, string Text)
+function float WrapText(Canvas C, float X, float Y, float W, string Text, optional bool bMeasure)
 {
 	local string Word, Line, Test;
 	local int k;
@@ -183,7 +199,8 @@ function float WrapText(Canvas C, float X, float Y, float W, string Text)
 		TextSize(C, Test, XL, YL);
 		if ( XL > W*S && Line != "" )
 		{
-			TextAt(C, X, Y, Line);
+			if ( !bMeasure )
+				TextAt(C, X, Y, Line);
 			Y += YL / S;
 			Line = Word;
 		}
@@ -192,7 +209,8 @@ function float WrapText(Canvas C, float X, float Y, float W, string Text)
 	}
 	if ( Line != "" )
 	{
-		TextAt(C, X, Y, Line);
+		if ( !bMeasure )
+			TextAt(C, X, Y, Line);
 		Y += YL / S;
 	}
 	return Y + 4;
@@ -206,7 +224,8 @@ function SetColor(Canvas C, byte R, byte G, byte B)
 function Paint(Canvas C, float X, float Y)
 {
 	local int i;
-	local float TY, SW, SH, Blink;
+	local float TY, SW, SH, Blink, Flick;
+	local int FontSize;
 
 	if ( !bPrepared )
 		Prepare();
@@ -232,8 +251,20 @@ function Paint(Canvas C, float X, float Y)
 		SW = 320; SH = 320;
 		if ( Shot.USize > Shot.VSize )
 			SH = 320 * Shot.VSize / Shot.USize;
-		SetColor(C, 255, 255, 255);
+		// a very light flicker, like an old monitor
+		Flick = 0.95 + 0.05 * FRand();
+		if ( FRand() < 0.02 )
+			Flick = 0.88;
+		SetColor(C, byte(255 * Flick), byte(255 * Flick), byte(255 * Flick));
 		BX(C, 767 - SW/2, 247 - SH/2, SW, SH, Shot);
+		// faint TV static on top
+		if ( StaticTex[0] != None )
+		{
+			C.Style = 3;
+			SetColor(C, 14, 14, 14);
+			BX(C, 767 - SW/2, 247 - SH/2, SW, SH, StaticTex[int(Age * 20) % 4]);
+			C.Style = 1;
+		}
 	}
 	else
 	{
@@ -246,34 +277,39 @@ function Paint(Canvas C, float X, float Y)
 	C.Font = class'UTMMainWindow'.static.PickFont(Root, 24 * S);
 	SetColor(C, 255, 210, 40);
 	TextAt(C, 172, 262, "OBJECTIVES");
-	C.Font = class'UTMMainWindow'.static.PickFont(Root, 16 * S);
+	// pick the biggest font that still fits the red panel (bottom ~ y 640)
+	for ( FontSize = 16; FontSize > 9; FontSize -= 2 )
+	{
+		C.Font = class'UTMMainWindow'.static.PickFont(Root, FontSize * S);
+		TY = 300;
+		for ( i = 0; i < NumLines; i++ )
+			TY = WrapText(C, 172, TY, 200, Lines[i], true);
+		if ( TY <= 640 )
+			break;
+	}
 	SetColor(C, 235, 235, 235);
 	TY = 300;
 	for ( i = 0; i < NumLines; i++ )
 		TY = WrapText(C, 172, TY, 200, Lines[i]);
 
-	// map name and author in the bottom box
-	C.Font = class'UTMMainWindow'.static.PickFont(Root, 30 * S);
+	// map info in the bottom box
+	C.Font = class'UTMMainWindow'.static.PickFont(Root, 26 * S);
 	SetColor(C, 255, 255, 255);
-	TextCentered(C, 734, 598, MapTitle);
-	C.Font = class'UTMMainWindow'.static.PickFont(Root, 16 * S);
+	TextCentered(C, 734, 592, MapTitle);
+	C.Font = class'UTMMainWindow'.static.PickFont(Root, 14 * S);
 	SetColor(C, 170, 170, 170);
 	if ( MapAuthor != "" )
-		TextCentered(C, 734, 640, "by "$MapAuthor);
+		TextCentered(C, 734, 622, "by "$MapAuthor);
 	if ( MapPlayers != "" )
-		TextCentered(C, 734, 664, MapPlayers$" players");
+		TextCentered(C, 734, 638, MapFile$"   -   "$MapPlayers$" players");
+	else
+		TextCentered(C, 734, 638, MapFile);
 
-	// press anywhere (blinking) between the screen and the bottom box
-	Blink = 0.8 + 0.2 * Sin(Age * 4.0);
-	BX(C, 548, 466, 380, 50, Texture'UMenu.MenuBlack');
-	SetColor(C, 150, 110, 30);
-	BX(C, 548, 466, 380, 1.5, Texture'UWindow.WhiteTexture');
-	BX(C, 548, 514.5, 380, 1.5, Texture'UWindow.WhiteTexture');
-	BX(C, 548, 466, 1.5, 50, Texture'UWindow.WhiteTexture');
-	BX(C, 926.5, 466, 1.5, 50, Texture'UWindow.WhiteTexture');
-	C.Font = class'UTMMainWindow'.static.PickFont(Root, 20 * S);
-	SetColor(C, byte(255 * Blink), byte(210 * Blink), byte(40 * Blink));
-	TextCentered(C, 738, 478, PressText);
+	// press anywhere: big, slowly pulsing, in the blue of the UT intro billboard
+	Blink = 0.65 + 0.35 * Sin(Age * 2.2);
+	C.Font = class'UTMMainWindow'.static.PickFont(Root, 22 * S);
+	SetColor(C, byte(70 * Blink), byte(160 * Blink), byte(255 * Blink));
+	TextCentered(C, 734, 660, PressText);
 	SetColor(C, 255, 255, 255);
 }
 

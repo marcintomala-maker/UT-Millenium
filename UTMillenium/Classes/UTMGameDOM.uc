@@ -9,6 +9,10 @@ event InitGame(string Options, out string Error)
 {
 	GoalTeamScore = 100;
 	TimeLimit = 20;
+	if ( class'UTMSettings'.default.bJustTwoTeams )
+		MaxTeams = 2;
+	else
+		MaxTeams = 2 + Rand(3);   // 2, 3 or 4 teams
 	Super.InitGame(Options, Error);
 	Core = class'UTMCore'.static.Install(self, Options);
 }
@@ -46,5 +50,6 @@ function RestartGame()
 
 defaultproperties
 {
+	HUDType=Class'UTMillenium.UTMDominationHUD'
 	GameName="UT Millenium Domination"
 }

@@ -5,7 +5,7 @@
 class UTMSettingsCW extends UWindowDialogClientWindow;
 
 var UWindowHSliderControl BrightSlider, FovSlider, SensSlider;
-var UWindowHSliderControl MusicSlider, SoundSlider, SpeechSlider;
+var UWindowHSliderControl MusicSlider, SoundSlider, SpeechSlider, HudSlider;
 var UWindowComboControl FpsCombo;
 var UWindowCheckbox InvertCheck, TauntCheck;
 var UWindowSmallButton KeysButton, CharButton, MutButton;
@@ -17,7 +17,7 @@ var float Y_Tech, Y_Game, Y_Modes, Y_Mut;
 
 var localized string TechText, GameText, ModesText, MutText;
 var localized string BrightText, FovText, FpsText, SensText, InvertText;
-var localized string MusicText, SoundText, SpeechText, KeysText;
+var localized string MusicText, SoundText, SpeechText, KeysText, HudText;
 var localized string CharText, TauntText, MapsText, MutButtonText, MutCountText;
 var localized string UnlimitedText;
 
@@ -101,6 +101,8 @@ function Created()
 	FpsCombo.SetSelectedIndex(i);
 	Y += 24;
 
+	HudSlider = MakeSlider(HudText, Y, 1, 5, 1, class'ChallengeHUD'.default.HUDScale * 5);
+	Y += 24;
 	SensSlider = MakeSlider(SensText, Y, 1, 40, 1, P.MouseSensitivity * 4);
 	Y += 24;
 	InvertCheck = MakeCheck(InvertText, LeftX(), Y, FullW(), P.bInvertMouse);
@@ -172,6 +174,7 @@ function BeforePaint(Canvas C, float X, float Y)
 	}
 	BrightSlider.SliderWidth = (WinWidth - 20) * 0.5;
 	FovSlider.SliderWidth = (WinWidth - 20) * 0.5;
+	HudSlider.SliderWidth = (WinWidth - 20) * 0.5;
 	SensSlider.SliderWidth = (WinWidth - 20) * 0.5;
 	MusicSlider.SliderWidth = (WinWidth - 20) * 0.5;
 	SoundSlider.SliderWidth = (WinWidth - 20) * 0.5;
@@ -180,6 +183,7 @@ function BeforePaint(Canvas C, float X, float Y)
 	FpsCombo.EditBoxWidth = (WinWidth - 20) * 0.5;
 	SensSlider.SetText(SensText$": "$Left(string(SensSlider.GetValue() / 4.0), 4));
 	FovSlider.SetText(FovText$": "$int(FovSlider.GetValue()));
+	HudSlider.SetText(HudText$": "$int(HudSlider.GetValue() * 20)$"%");
 }
 
 function DrawHeader(Canvas C, float Y, string Text)
@@ -245,6 +249,15 @@ function Notify(UWindowDialogControl C, byte E)
 		case FpsCombo:
 			P.ConsoleCommand("set ini:Engine.Engine.ViewportManager FrameRateLimit "$FpsCombo.GetValue2());
 			break;
+		case HudSlider:
+			class'ChallengeHUD'.default.HUDScale = HudSlider.GetValue() / 5.0;
+			if ( ChallengeHUD(P.myHUD) != None )
+			{
+				ChallengeHUD(P.myHUD).HUDScale = HudSlider.GetValue() / 5.0;
+				P.myHUD.SaveConfig();
+			}
+			class'ChallengeHUD'.static.StaticSaveConfig();
+			break;
 		case SensSlider:
 			P.UpdateSensitivity(SensSlider.GetValue() / 4.0);
 			P.SaveConfig();
@@ -307,6 +320,7 @@ defaultproperties
 	BrightText="Brightness"
 	FovText="Field of View"
 	FpsText="Frame Rate Limit"
+	HudText="HUD Size"
 	SensText="Mouse Sensitivity"
 	InvertText="Invert Mouse"
 	MusicText="Music Volume"

@@ -20,7 +20,8 @@ set "PATCHSHA=8c94eb7e990f5480b1fb7bcb1bd15c2512da134dbf01bfa16e7f99f0a8a0ee86"
 set "MENU=UT-Logo-Map.unr?Game=UTMillenium.UTMMenuGame"
 set "PS=powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command"
 
-mode con: cols=72 lines=18 >nul 2>&1
+mode con: cols=80 lines=26 >nul 2>&1
+for /f %%a in ('echo prompt $E^| cmd') do set "ESC=%%a"
 echo [%date% %time%] start %* > "%LOG%"
 
 if /i "%~1"=="/setup" goto setup
@@ -33,16 +34,12 @@ goto play
 
 rem --------------------------------------------------------------------------
 :setup
-cls
-echo.
-echo   =====================================================
-echo                 U T   M I L L E N I U M
-echo                    first time setup
-echo   =====================================================
+call :banner
+echo(%ESC%[93m  FIRST TIME SETUP%ESC%[0m
 echo.
 call :findut
 if not defined UT goto askut
-echo   Found Unreal Tournament here:
+echo(  %ESC%[93mFound Unreal Tournament here:%ESC%[0m
 echo.
 echo     %UT%
 echo.
@@ -92,7 +89,7 @@ echo   and put it next to this file. Then start again.
 goto failed
 
 :zipok
-echo   [1/4] OldUnreal 469e patch ready.
+echo(  %ESC%[93m[1/4]%ESC%[0m OldUnreal 469e patch ready.
 
 rem ---- fresh game folder
 if exist "%GAME%" rmdir /s /q "%GAME%"
@@ -102,7 +99,7 @@ if not exist "%GAME%\_patch\System\UnrealTournament.exe" (
   echo   Couldn't unpack the patch.
   goto failed
 )
-echo   [2/4] Patch unpacked.
+echo(  %ESC%[93m[2/4]%ESC%[0m Patch unpacked.
 
 rem ---- System = your UT System files (no programs) + the patch on top
 robocopy "%UT%\System" "%GAME%\System" /E /XF *.dll *.exe *.ini /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1
@@ -117,7 +114,7 @@ if not exist "%GAME%\System\UnrealTournament.ini" (
   echo   Couldn't build the game folder.
   goto failed
 )
-echo   [3/4] Game folder built (your Steam files were only read).
+echo(  %ESC%[93m[3/4]%ESC%[0m Game folder built (your Steam files were only read).
 
 rem ---- one-time settings: auto taunt on
 set "UTM_GAME=%GAME%"
@@ -125,25 +122,20 @@ set "UTM_GAME=%GAME%"
 
 > "%GAME%\utpath.txt" echo %UT%
 > "%GAME%\setup.ok" echo 1
-echo   [4/4] Done! Starting UT Millenium...
+echo(  %ESC%[93m[4/4]%ESC%[0m Done! Starting UT Millenium...
 echo setup ok>> "%LOG%"
 timeout /t 2 /nobreak >nul
 goto play
 
 rem --------------------------------------------------------------------------
 :play
-cls
-echo.
-echo   =====================================================
-echo                 U T   M I L L E N I U M
-echo   =====================================================
-echo.
-echo   Loading... the menu opens in a few seconds.
+call :banner
+echo(%ESC%[93m  Loading...%ESC%[0m the menu opens in a few seconds.
 echo.
 call :update
 if errorlevel 1 goto failed
 echo launching>> "%LOG%"
-echo   UT Millenium is running. Have fun!
+echo(%ESC%[92m  UT Millenium is running. Have fun!%ESC%[0m
 echo.
 echo   Keep this window open while you play (you can minimize it).
 echo   It closes by itself when you EXIT the game.
@@ -229,10 +221,26 @@ exit /b 1
 rem --------------------------------------------------------------------------
 :failed
 echo.
-echo   Setup didn't finish. Details are in launcher.log next to this file.
+echo(  %ESC%[91mSetup didn't finish.%ESC%[0m Details are in launcher.log next to this file.
 echo failed>> "%LOG%"
 pause
 exit /b 1
 
 :end
+exit /b 0
+
+rem --------------------------------------------------------------------------
+:banner
+cls
+echo(
+echo(%ESC%[93m   _   _ _____  ___  ________ _      _      _____ _   _ _____ _   ____  ___%ESC%[0m
+echo(%ESC%[93m  ^| ^| ^| ^|_   _^| ^|  \/  ^|_   _^| ^|    ^| ^|    ^|  ___^| \ ^| ^|_   _^| ^| ^| ^|  \/  ^|%ESC%[0m
+echo(%ESC%[93m  ^| ^| ^| ^| ^| ^|   ^| .  . ^| ^| ^| ^| ^|    ^| ^|    ^| ^|__ ^|  \^| ^| ^| ^| ^| ^| ^| ^| .  . ^|%ESC%[0m
+echo(%ESC%[93m  ^| ^| ^| ^| ^| ^|   ^| ^|\/^| ^| ^| ^| ^| ^|    ^| ^|    ^|  __^|^| . ` ^| ^| ^| ^| ^| ^| ^| ^|\/^| ^|%ESC%[0m
+echo(%ESC%[93m  ^| ^|_^| ^| ^| ^|   ^| ^|  ^| ^|_^| ^|_^| ^|____^| ^|____^| ^|___^| ^|\  ^|_^| ^|_^| ^|_^| ^| ^|  ^| ^|%ESC%[0m
+echo(%ESC%[93m   \___/  \_/   \_^|  ^|_/\___/\_____/\_____/\____/\_^| \_/\___/ \___/\_^|  ^|_/%ESC%[0m
+echo(%ESC%[91m  ---------------------------------------------------------------------------%ESC%[0m
+echo(%ESC%[37m          a quick-play front end for Unreal Tournament (1999)%ESC%[0m
+echo(%ESC%[91m  ---------------------------------------------------------------------------%ESC%[0m
+echo(
 exit /b 0

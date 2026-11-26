@@ -12,7 +12,7 @@ Games files and never changes your Steam install.
 - One match in borderless fullscreen, then straight back to the menu.
 - **ESC** pauses the match and shows the menu ("MATCH IN PROGRESS").
 - Stats: winning streak, highest streak, K/D, wins, losses, kills, captures.
-- **Original Move Speed** (off = everybody moves 15% slower, dodges stay
+- **Original Move Speed** (off = everybody moves 10% slower, dodges stay
   original) and **Max Bots** (fill the map to its maximum).
 - Settings: brightness, FOV, frame-rate cap, mouse, volumes, key bindings,
   character, game modes, per-mode map lists, mutators, auto taunt.
