@@ -51,7 +51,7 @@ foreach ($l in (Get-Content -LiteralPath $f)) {
 }
 $out = Set-IniKeys $out 'URL' @{ LocalMap = 'UT-Logo-Map.unr' }
 $out = Set-IniKeys $out 'FirstRun' @{ FirstRun = '469' }
-$out = Set-IniKeys $out 'Engine.Engine' @{ Console = 'UTMillenium.UTMConsole' }
+$out = Set-IniKeys $out 'Engine.Engine' @{ Console = 'UTMillenium.UTMConsole'; CdPath = '' }
 $out = Set-IniKeys $out 'WinDrv.WindowsClient' @{ StartupFullscreen = 'False'; StartupBorderless = 'False';
         WindowedViewportX = $pw; WindowedViewportY = $ph; FullscreenViewportX = $dw; FullscreenViewportY = $dh }
 Set-Content -LiteralPath $f -Value $out -Encoding Default
