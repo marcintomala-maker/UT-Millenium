@@ -23,12 +23,16 @@ Games files and never changes your Steam install.
 
 ## Install (players)
 
-1. Unzip the release anywhere and run `UT Millenium.exe`.
-2. Confirm your Unreal Tournament folder (found automatically for Steam).
+1. Right-click the downloaded zip, open Properties and tick **Unblock**. Then unzip it anywhere.
+2. Run `UT Millenium.cmd` and confirm your Unreal Tournament folder (found automatically for Steam).
 3. The launcher downloads the free OldUnreal 469e patch (101 MB, checksum
    verified) and builds a private `Game` folder next to itself.
 
-`UT Millenium.exe /setup` redoes the setup (for example after moving UT).
+`UT Millenium.cmd /setup` redoes the setup (for example after moving UT).
+
+The launcher is a plain `.cmd` script rather than an exe. Windows 11 Smart
+App Control blocks unsigned exes outright, while the OldUnreal game files are
+digitally signed.
 
 ## Layout
 
@@ -36,7 +40,7 @@ Games files and never changes your Steam install.
 |---|---|
 | `UTMillenium/Classes` | UnrealScript source of the mod package |
 | `UTMillenium/UTMillenium.int` | Mutator registrations |
-| `Launcher/` | Windows launcher and installer (plain C, Win32) |
+| `Launcher/` | Windows launcher (`UT Millenium.cmd`); its PowerShell helpers (`ps/`) ship as `Data/*.txt` |
 | `Tools/` | Build helper for compiling the package with the Linux UCC |
 
 ## Building
@@ -47,10 +51,9 @@ install next to `System`, add `EditPackages=UTMillenium` to the
 `Tools/ucc_make_linux.py` runs the 469e `ucc-bin` and answers its v436
 compatibility prompts. UT Millenium targets 469e only.
 
-**Launcher**: `Launcher/build.sh` cross-compiles with zig (`pip install ziglang`).
-
-**Release folder**: `UT Millenium.exe`, a `Data` folder with `UTMillenium.u`
-and `UTMillenium.int`, and `README.txt`.
+**Release folder**: `UT Millenium.cmd`, `README.txt`, and a `Data` folder with
+`UTMillenium.u`, `UTMillenium.int`, and the `Launcher/ps/*.ps1` files renamed
+to `.txt`.
 
 ## Credits
 
