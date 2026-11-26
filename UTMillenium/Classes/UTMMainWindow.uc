@@ -11,6 +11,7 @@ var UTMCheck ChkSpeed, ChkMaxBots;
 var UWindowMessageBox ResetBox, NoMapsBox, AddMapsBox;
 
 var string TipText;
+var string TipLine[8];
 var float S, OX, OY;
 
 var Texture LogoTex[3], BackTex, TrophyTex;
@@ -267,10 +268,48 @@ function Paint(Canvas C, float X, float Y)
 	SetColor(C, 255, 255, 255);
 }
 
+// Splits Text into TipLine[] so every line fits into MaxW. Returns the line count.
+function int WrapTip(Canvas C, string Text, float MaxW)
+{
+	local string Word, Line, Test;
+	local int n, k;
+	local float XL, YL;
+
+	while ( Text != "" && n < 8 )
+	{
+		k = InStr(Text, " ");
+		if ( k < 0 )
+		{
+			Word = Text;
+			Text = "";
+		}
+		else
+		{
+			Word = Left(Text, k);
+			Text = Mid(Text, k + 1);
+		}
+		if ( Line == "" )
+			Test = Word;
+		else
+			Test = Line @ Word;
+		TextSize(C, Test, XL, YL);
+		if ( XL > MaxW && Line != "" )
+		{
+			TipLine[n++] = Line;
+			Line = Word;
+		}
+		else
+			Line = Test;
+	}
+	if ( Line != "" && n < 8 )
+		TipLine[n++] = Line;
+	return n;
+}
+
 function AfterPaint(Canvas C, float X, float Y)
 {
 	local float XL, YL, TY, H;
-	local int Lines;
+	local int Lines, i;
 
 	Super.AfterPaint(C, X, Y);
 
@@ -285,13 +324,13 @@ function AfterPaint(Canvas C, float X, float Y)
 		SetColor(C, 255, 255, 255);
 	}
 
-	// tooltip
+	// tooltip: word-wrapped to the box, box sized to the text
 	if ( TipText != "" )
 	{
 		C.Font = Root.Fonts[F_Normal];
 		TextSize(C, "Wy", XL, YL);
-		Lines = WrapClipText(C, 8, 0, TipText, False, 0, 0, True);
-		H = Lines * YL + 8;
+		Lines = WrapTip(C, TipText, WinWidth - 24);
+		H = Lines * YL + 10;
 		TY = Y + 20;
 		if ( TY + H > WinHeight )
 			TY = Y - H - 8;
@@ -300,8 +339,11 @@ function AfterPaint(Canvas C, float X, float Y)
 		SetColor(C, 255, 200, 0);
 		DrawStretchedTexture(C, 4, TY, WinWidth - 8, 1, Texture'UWindow.WhiteTexture');
 		DrawStretchedTexture(C, 4, TY + H - 1, WinWidth - 8, 1, Texture'UWindow.WhiteTexture');
+		DrawStretchedTexture(C, 4, TY, 1, H, Texture'UWindow.WhiteTexture');
+		DrawStretchedTexture(C, WinWidth - 5, TY, 1, H, Texture'UWindow.WhiteTexture');
 		SetColor(C, 240, 240, 240);
-		WrapClipText(C, 8, TY + 4, TipText);
+		for ( i = 0; i < Lines; i++ )
+			ClipText(C, 12, TY + 5 + i * YL, TipLine[i]);
 		SetColor(C, 255, 255, 255);
 	}
 }

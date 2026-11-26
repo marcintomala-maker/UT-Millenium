@@ -20,11 +20,7 @@ set "PATCHSHA=8c94eb7e990f5480b1fb7bcb1bd15c2512da134dbf01bfa16e7f99f0a8a0ee86"
 set "MENU=UT-Logo-Map.unr?Game=UTMillenium.UTMMenuGame"
 set "PS=powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command"
 
-if not "%UTM_MIN%"=="1" if exist "%GAME%\setup.ok" if /i not "%~1"=="/setup" (
-  set "UTM_MIN=1"
-  start "UT Millenium" /min "%~f0"
-  exit /b 0
-)
+mode con: cols=72 lines=18 >nul 2>&1
 echo [%date% %time%] start %* > "%LOG%"
 
 if /i "%~1"=="/setup" goto setup
@@ -136,10 +132,22 @@ goto play
 
 rem --------------------------------------------------------------------------
 :play
+cls
+echo.
+echo   =====================================================
+echo                 U T   M I L L E N I U M
+echo   =====================================================
+echo.
+echo   Loading... the menu opens in a few seconds.
+echo.
 call :update
 if errorlevel 1 goto failed
 echo launching>> "%LOG%"
-rem this window waits (minimized) while you play; it's needed for ADD MAPS
+echo   UT Millenium is running. Have fun!
+echo.
+echo   Keep this window open while you play (you can minimize it).
+echo   It closes by itself when you EXIT the game.
+rem this window waits while you play; it's needed for ADD MAPS
 start "" /wait /d "%GAME%\System" "%GAME%\System\UnrealTournament.exe" %MENU%
 echo game closed>> "%LOG%"
 findstr /i /c:"bAddMapsRequest=True" "%GAME%\System\UTMillenium.ini" >nul 2>&1
