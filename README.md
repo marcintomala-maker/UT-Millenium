@@ -12,7 +12,7 @@ Games files and never changes your Steam install.
 - One match in borderless fullscreen, then straight back to the menu.
 - **ESC** pauses the match and shows the menu ("MATCH IN PROGRESS").
 - Stats: winning streak, highest streak, K/D, wins, losses, kills, captures.
-- **Original Move Speed** (off = everybody moves 10% slower, dodges stay
+- **Casual Move Speed** (on by default: everybody moves 10% slower, dodges stay
   original) and **Max Bots** (fill the map to its maximum).
 - Settings: brightness, FOV, frame-rate cap, mouse, volumes, key bindings,
   character, game modes, per-mode map lists, mutators, auto taunt.
@@ -24,11 +24,11 @@ Games files and never changes your Steam install.
 ## Install (players)
 
 1. Right-click the downloaded zip, open Properties and tick **Unblock**. Then unzip it anywhere.
-2. Run `UT Millenium.cmd` and confirm your Unreal Tournament folder (found automatically for Steam).
+2. Run `UT Millenium Launcher` and confirm your Unreal Tournament folder (found automatically for Steam).
 3. The launcher downloads the free OldUnreal 469e patch (101 MB, checksum
    verified) and builds a private `Game` folder next to itself.
 
-`UT Millenium.cmd /setup` redoes the setup (for example after moving UT).
+`UT Millenium Launcher.cmd /setup` redoes the setup (for example after moving UT).
 
 The launcher is a plain `.cmd` script rather than an exe. Windows 11 Smart
 App Control blocks unsigned exes outright, while the OldUnreal game files are
@@ -40,7 +40,7 @@ digitally signed.
 |---|---|
 | `UTMillenium/Classes` | UnrealScript source of the mod package |
 | `UTMillenium/UTMillenium.int` | Mutator registrations |
-| `Launcher/` | Windows launcher (`UT Millenium.cmd`); its PowerShell helpers (`ps/`) ship as `Data/*.txt` |
+| `Launcher/` | Windows launcher (`UT Millenium Launcher.cmd`); its PowerShell helpers (`ps/`) ship as `UT Millenium Data/Mod/*.txt` |
 | `Tools/` | Build helper for compiling the package with the Linux UCC |
 
 ## Building
@@ -51,9 +51,9 @@ install next to `System`, add `EditPackages=UTMillenium` to the
 `Tools/ucc_make_linux.py` runs the 469e `ucc-bin` and answers its v436
 compatibility prompts. UT Millenium targets 469e only.
 
-**Release folder**: `UT Millenium.cmd`, `README.txt`, and a `Data` folder with
-`UTMillenium.u`, `UTMillenium.int`, and the `Launcher/ps/*.ps1` files renamed
-to `.txt`.
+**Release folder**: `UT Millenium Launcher.cmd` plus a `UT Millenium Data` folder
+with `README.txt` and `Mod/` (`UTMillenium.u`, `UTMillenium.int`, and the
+`Launcher/ps/*.ps1` files renamed to `.txt`).
 
 ## Credits
 

@@ -15,6 +15,8 @@ var int    ScreenMode;        // 1 = portrait window, 2 = borderless fullscreen
 var bool   bMatchPaused;      // menu opened from a running match
 var bool   bBriefing;         // pre-match board is up
 var float  BriefingAge;
+var float  CursorFixTime;     // re-show the Windows cursor after a mode switch
+var localized string SkipText;
 
 const MODE_LOADING = -1;
 const MODE_MENU = 0;
@@ -55,10 +57,13 @@ event Tick( float Delta )
 		return;
 	if ( bBriefing )
 		BriefingAge += Delta;
-	// switching from fullscreen back to the window can hide the mouse:
-	// keep it on while any menu is open
+	// Switching between fullscreen and the window can leave the Windows cursor
+	// hidden. Toggle it off and on again after every switch, then keep it on
+	// while a menu is open.
+	if ( CursorFixTime > 0 )
+		CursorFixTime -= Delta;
 	if ( bUWindowActive && !bQuickKeyEnable )
-		Viewport.bShowWindowsMouse = true;
+		Viewport.bShowWindowsMouse = !(CursorFixTime > 0.25);
 	Lvl = string(Viewport.Actor.Level);
 	if ( Lvl == LastLevel )
 		return;
@@ -118,6 +123,7 @@ function SetPortrait()
 	if ( ScreenMode == 1 )
 		return;
 	ScreenMode = 1;
+	CursorFixTime = 0.5;
 	W = class'UTMSettings'.default.PortraitX;
 	H = class'UTMSettings'.default.PortraitY;
 	if ( W < 200 || H < 300 )
@@ -134,6 +140,7 @@ function SetBorderless()
 	if ( ScreenMode == 2 )
 		return;
 	ScreenMode = 2;
+	CursorFixTime = 0.5;
 	Viewport.Actor.ConsoleCommand("SetScreenMode Borderless");
 	if ( class'UTMSettings'.default.DesktopX > 0 && class'UTMSettings'.default.DesktopY > 0 )
 		Viewport.Actor.ConsoleCommand("SetRes "$class'UTMSettings'.default.DesktopX$"x"$class'UTMSettings'.default.DesktopY);
@@ -153,6 +160,8 @@ function LaunchUWindow()
 		return;
 	}
 
+	if ( !bQuickKeyEnable && M == MODE_MATCH )
+		SetPortrait();
 	Super.LaunchUWindow();
 	bLocked = false;
 
@@ -161,10 +170,7 @@ function LaunchUWindow()
 
 	bNoDrawWorld = true;
 	if ( M == MODE_MATCH )
-	{
 		bMatchPaused = true;
-		SetPortrait();
-	}
 }
 
 function CloseUWindow()
@@ -338,6 +344,31 @@ function RefreshSpeed()
 }
 
 //-----------------------------------------------------------------------------
+// Intro / outro: small pulsing hint
+
+event PostRender( canvas C )
+{
+	local float XL, YL, P;
+	local Font F;
+
+	Super.PostRender(C);
+	if ( GetMode() != MODE_CINEMATIC )
+		return;
+	F = Font(DynamicLoadObject("LadderFonts.UTLadder16", class'Font'));
+	if ( F != None )
+		C.Font = F;
+	P = 0.6 + 0.4 * Sin(Viewport.Actor.Level.TimeSeconds * 2.2);
+	C.Style = 1;
+	C.DrawColor.R = byte(70 * P);
+	C.DrawColor.G = byte(160 * P);
+	C.DrawColor.B = byte(255 * P);
+	C.bCenter = false;
+	C.StrLen(SkipText, XL, YL);
+	C.SetPos(C.ClipX / 2 - XL / 2, C.ClipY - YL * 2.5);
+	C.DrawText(SkipText, false);
+}
+
+//-----------------------------------------------------------------------------
 // Loading screen
 
 function PrintActionMessage( Canvas C, string BigMessage )
@@ -384,6 +415,7 @@ defaultproperties
 	IntroURL="CityIntro.unr?Game=UTMillenium.UTMIntroGame"
 	OutroURL="EOL_Challenge.unr?Game=UTMillenium.UTMOutroGame"
 	ScreenMode=0
+	SkipText="PRESS ANYWHERE TO CONTINUE"
 	LoadingMessage="LOADING"
 	PrecachingMessage="LOADING"
 }

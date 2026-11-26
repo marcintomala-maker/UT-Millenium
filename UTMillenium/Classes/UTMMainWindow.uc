@@ -78,7 +78,7 @@ function Created()
 	for ( i = 0; i < 3; i++ )
 		BtnTier[i] = MakeButton(TierText[i]);
 
-	ChkSpeed   = MakeCheck(SpeedText,   class'UTMSettings'.default.bOrigSpeed);
+	ChkSpeed   = MakeCheck(SpeedText,   !class'UTMSettings'.default.bOrigSpeed);
 	ChkMaxBots = MakeCheck(MaxBotsText, class'UTMSettings'.default.bMaxBots);
 	ChkTwoTeams = MakeCheck(TwoTeamsText, class'UTMSettings'.default.bJustTwoTeams);
 
@@ -119,14 +119,15 @@ function BeforePaint(Canvas C, float X, float Y)
 	for ( i = 0; i < 3; i++ )
 		Place(BtnTier[i], 70, 318 + i * 46, 220, 42);
 
-	Place(ChkSpeed,    100, 455, 170, 16);
-	Place(ChkMaxBots,  100, 473, 170, 16);
-	Place(ChkTwoTeams, 100, 491, 170, 16);
+	// two columns
+	Place(ChkSpeed,     34, 458, 150, 16);
+	Place(ChkMaxBots,   34, 478, 150, 16);
+	Place(ChkTwoTeams, 196, 458, 140, 16);
 
-	Place(BtnSettings, 24, 514, 152, 36);
-	Place(BtnCredits, 184, 514, 152, 36);
-	Place(BtnIntro,    24, 556, 152, 36);
-	Place(BtnOutro,   184, 556, 152, 36);
+	Place(BtnSettings, 24, 506, 152, 38);
+	Place(BtnCredits, 184, 506, 152, 38);
+	Place(BtnIntro,    24, 550, 152, 38);
+	Place(BtnOutro,   184, 550, 152, 38);
 	Place(BtnMute,     24, 600, 100, 28);
 	Place(BtnExit,    236, 600, 100, 28);
 	Place(BtnAddMaps, 130, 600, 100, 28);
@@ -279,8 +280,23 @@ function int WrapTip(Canvas C, string Text, float MaxW)
 
 	while ( Text != "" && n < 8 )
 	{
+		if ( Left(Text, 1) == "|" )
+		{
+			if ( Line != "" )
+				TipLine[n++] = Line;
+			Line = "";
+			Text = Mid(Text, 1);
+			continue;
+		}
 		k = InStr(Text, " ");
-		if ( k < 0 )
+		if ( InStr(Text, "|") >= 0 && (k < 0 || InStr(Text, "|") < k) )
+		{
+			// word ends right at a line break: keep the "|" for the next round
+			k = InStr(Text, "|");
+			Word = Left(Text, k);
+			Text = Mid(Text, k);
+		}
+		else if ( k < 0 )
 		{
 			Word = Text;
 			Text = "";
@@ -380,7 +396,7 @@ function Notify(UWindowDialogControl C, byte E)
 	case DE_Change:
 		if ( C == ChkSpeed )
 		{
-			class'UTMSettings'.default.bOrigSpeed = ChkSpeed.bChecked;
+			class'UTMSettings'.default.bOrigSpeed = !ChkSpeed.bChecked;
 			class'UTMSettings'.static.Save();
 			if ( Con != None )
 				Con.RefreshSpeed();
@@ -456,12 +472,12 @@ defaultproperties
 	TierText(0)="EASY"
 	TierText(1)="MEDIUM"
 	TierText(2)="HARD"
-	SpeedText="Original Move Speed"
-	SpeedTip="Off: you and the bots move 10% slower than in original UT (dodges stay original). On: original UT speed."
+	SpeedText="Casual Move Speed"
+	SpeedTip="ON: a more casual game. Move speed is reduced by 10% for you and the bots (dodges stay original).|OFF: the original Unreal Tournament move speed."
 	MaxBotsText="Max Bots"
-	MaxBotsTip="Off: bots fill the map's recommended player count. On: the map is filled with bots up to its maximum."
+	MaxBotsTip="ON: the map is filled with bots up to its maximum player count.|OFF: bots fill the map's recommended player count."
 	TwoTeamsText="Just Two Teams"
-	TwoTeamsTip="Team Deathmatch and Domination can have 2, 3 or 4 teams. Tick this and only two teams will play."
+	TwoTeamsTip="ON: in multi-team game modes (Team Deathmatch, Domination) only two teams play.|OFF: those modes randomly have 2, 3 or 4 teams."
 	SettingsText="SETTINGS"
 	CreditsText="CREDITS"
 	IntroText="PLAY INTRO"
