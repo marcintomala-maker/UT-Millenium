@@ -50,8 +50,15 @@ rem --------------------------------------------------------------------------
 call :banner
 echo(  %ESC%[93mFIRST TIME SETUP%ESC%[0m
 echo.
+echo(  Looking for Unreal Tournament: Steam and GOG libraries, Program Files,
+echo(  Games and other common folders on drives C, D, E, F, G and H...
+echo.
 call :findut
-if not defined UT goto askut
+if defined UT goto foundut
+echo(  %ESC%[91mCouldn't find it in any of the usual places.%ESC%[0m
+goto askut
+
+:foundut
 echo(  %ESC%[93mFound Unreal Tournament here:%ESC%[0m
 echo.
 echo     %UT%
