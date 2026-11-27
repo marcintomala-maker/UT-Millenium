@@ -246,61 +246,43 @@ if not exist "%GAME%\shortcut.ok" call :shortcut
 exit /b 0
 
 rem --------------------------------------------------------------------------
-rem  Old school loading bar. Follows the game's log until the main menu is up.
+rem  Old school loading indicator while the game starts. The window closes
+rem  the moment the main menu is up (the game writes that into its log).
 :loadingbar
-set "BARFULL=||||||||||||||||||||||||||||||||||||||||"
-set "BAREMPTY=........................................"
 set "LF=%GAME%\System\UnrealTournament.log"
-set /a P=0
+set /a F=0
 call :now
 set /a T0=NOW
 :lbloop
-rem  GOAL = step the game reached, CAP = how far the bar may creep meanwhile
-set /a GOAL=3, CAP=12
-if exist "%LF%" set /a GOAL=12, CAP=30
-findstr /c:"ngine initialized" "%LF%" >nul 2>&1 && set /a GOAL=30, CAP=55
-findstr /c:"LoadMap: UT-Logo-Map" "%LF%" >nul 2>&1 && set /a GOAL=55, CAP=82
-findstr /c:"Game engine initialized" "%LF%" >nul 2>&1 && set /a GOAL=82, CAP=96
-findstr /c:"UTM EnterLevel mode=0" "%LF%" >nul 2>&1 && set /a GOAL=100, CAP=100
-set /a D=(GOAL-P)/3
-if %D% LSS 1 set /a D=1
-if %P% LSS %GOAL% (set /a P+=D) else if %P% LSS %CAP% set /a P+=1
-if %P% GTR 100 set /a P=100
-call :drawbar
-if %P% GEQ 100 goto lbdone
+findstr /c:"UTM EnterLevel mode=0" "%LF%" >nul 2>&1 && goto lbend
 if exist "%ERRFILE%" goto lbend
+set /a S=F %% 4, DT=(F / 3) %% 4
+if %S%==0 set "SP=|"
+if %S%==1 set "SP=/"
+if %S%==2 set "SP=-"
+if %S%==3 set "SP=\"
+if %DT%==0 set "DOTS=   "
+if %DT%==1 set "DOTS=.  "
+if %DT%==2 set "DOTS=.. "
+if %DT%==3 set "DOTS=..."
+<nul set /p "=%ESC%[1G%ESC%[2K  %ESC%[93m[%SP%]  LOADING%DOTS%%ESC%[0m"
+set /a F+=1
 call :now
 set /a W=NOW-T0
 if %W% LSS 0 set /a W+=8640000
-rem  stop drawing after 2 minutes (the game keeps loading anyway)
+rem  stop after 2 minutes (the game keeps loading anyway)
 if %W% GTR 12000 goto lbend
 call :nap
 goto lbloop
-:lbdone
-echo.
-echo.
-echo(  %ESC%[92mREADY! Have fun.%ESC%[0m
-timeout /t 1 /nobreak >nul
 :lbend
 exit /b 0
 
-:drawbar
-set /a N=P*40/100, M=40-N
-call set "BA=%%BARFULL:~0,%N%%%"
-call set "BB=%%BAREMPTY:~0,%M%%%"
-if %N%==0 set "BA="
-if %M%==0 set "BB="
-set "PCT=  %P%"
-set "PCT=%PCT:~-3%"
-<nul set /p "=%ESC%[1G%ESC%[2K  %ESC%[93mLOADING  [%BA%%ESC%[90m%BB%%ESC%[93m] %PCT%%%%ESC%[0m"
-exit /b 0
-
-rem  about a quarter of a second (ping to an address that never answers;
+rem  a short pause (ping to an address that never answers;
 rem  if there's no network at all it fails at once, then wait 1 second)
 :nap
 call :now
 set /a N0=NOW
-ping -n 1 -w 250 192.0.2.1 >nul 2>&1
+ping -n 1 -w 150 192.0.2.1 >nul 2>&1
 call :now
 set /a N1=NOW-N0
 if %N1% LSS 0 set /a N1+=8640000
