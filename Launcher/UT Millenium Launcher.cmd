@@ -3,7 +3,7 @@ rem ==========================================================================
 rem  UT Millenium Launcher
 rem  First run: finds Unreal Tournament, gets the free OldUnreal 469e patch,
 rem  and builds a private game folder inside "UT Millenium Data".
-rem  Your Steam installation is only read, never changed.
+rem  Your Unreal Tournament installation (Steam, GOG, CD) is only read, never changed.
 rem  After that the game starts silently (no window), logging to
 rem  "UT Millenium Data\launcher.log".
 rem ==========================================================================
@@ -20,6 +20,8 @@ set "LOG=%DATA%\launcher.log"
 set "ERRFILE=%DATA%\last_problem.txt"
 set "PATCH=OldUnreal-UTPatch469e-Windows-x86.zip"
 set "PATCHURL=https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v469e/OldUnreal-UTPatch469e-Windows-x86.zip"
+set "CORESHA=966a220dc3567495aea5b8a8baac9b3f2db547a75c5b8686a51ce2d6aa1d4740"
+set "ENGINESHA=e3e93f5b9a251cb4759fbf542bc86192518775b5af91b767aef361f9118c686d"
 set "PATCHSHA=8c94eb7e990f5480b1fb7bcb1bd15c2512da134dbf01bfa16e7f99f0a8a0ee86"
 set "MENU=UT-Logo-Map.unr?Game=UTMillenium.UTMMenuGame"
 set "PS=powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command"
@@ -49,6 +51,7 @@ rem --------------------------------------------------------------------------
 :setup
 call :banner
 echo(  %ESC%[93mFIRST TIME SETUP%ESC%[0m
+echo(  Works with Unreal Tournament GOTY from Steam or GOG (or the CD).
 echo(  It sets up the game in the "UT Millenium Data" folder and puts a
 echo(  "UT Millenium" shortcut on your Desktop.
 echo.
@@ -91,6 +94,19 @@ goto askut
 echo UT=%UT%>> "%LOG%"
 echo.
 
+rem ---- UT already has the OldUnreal 469e update? Then use it as it is.
+call :hashof "%UT%\System\Engine.dll"
+if /i not "%H%"=="%ENGINESHA%" goto needpatch
+call :hashof "%UT%\System\Core.dll"
+if /i not "%H%"=="%CORESHA%" goto needpatch
+echo(  %ESC%[93m[1/4]%ESC%[0m Your Unreal Tournament already has the OldUnreal 469e update.
+echo(        No download needed.
+if exist "%GAME%" rmdir /s /q "%GAME%"
+robocopy "%UT%\System" "%GAME%\System" /E /XF *.ini *.log /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1
+echo(  %ESC%[93m[2/4]%ESC%[0m Game files copied.
+goto commonfiles
+
+:needpatch
 rem ---- the free OldUnreal patch: already here, in Downloads, or download it
 set "ZIP=%DATA%\%PATCH%"
 call :checkzip "%ZIP%"
@@ -99,13 +115,16 @@ call :checkzip "%BASE%\%PATCH%"
 if not errorlevel 1 move /y "%BASE%\%PATCH%" "%ZIP%" >nul & goto zipok
 call :checkzip "%USERPROFILE%\Downloads\%PATCH%"
 if not errorlevel 1 copy /y "%USERPROFILE%\Downloads\%PATCH%" "%ZIP%" >nul & goto zipok
-echo   Downloading the free OldUnreal update for Unreal Tournament (101 MB)...
+echo(  UT Millenium needs the free %ESC%[93mOldUnreal 469e update%ESC%[0m for Unreal Tournament:
+echo(  the popular community patch that keeps UT99 running on modern Windows,
+echo(  made by the OldUnreal team (AnthraX, Higor, Buggie, Dots, Smirftsch and
+echo(  contributors). Downloading it once from github.com/OldUnreal (101 MB)...
 echo.
 curl.exe -L --fail --progress-bar -o "%ZIP%" "%PATCHURL%"
 call :checkzip "%ZIP%"
 if not errorlevel 1 goto zipok
 del /q "%ZIP%" >nul 2>&1
-call :fail "UT Millenium couldn't download the free update it needs." "Please check that you're connected to the internet, then start UT Millenium again."
+call :fail "UT Millenium couldn't download the free OldUnreal 469e update (101 MB)." "It's the popular community patch for Unreal Tournament that keeps it running" "on modern Windows, made by the OldUnreal team (AnthraX, Higor, Buggie, Dots," "Smirftsch and contributors). UT Millenium needs it only once." " " "Please connect to the internet and start UT Millenium again." " " "Or download it yourself from github.com/OldUnreal/UnrealTournamentPatches" "(release v469e, file OldUnreal-UTPatch469e-Windows-x86.zip)," "put it into your Downloads folder and start UT Millenium again."
 goto problem
 
 :zipok
@@ -122,19 +141,21 @@ goto problem
 echo(  %ESC%[93m[2/4]%ESC%[0m Update unpacked.
 
 rem ---- System = your UT System files (no programs) + the update on top
-robocopy "%UT%\System" "%GAME%\System" /E /XF *.dll *.exe *.ini /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1
+robocopy "%UT%\System" "%GAME%\System" /E /XF *.dll *.exe *.ini *.log /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1
 robocopy "%GAME%\_patch\System" "%GAME%\System" /E /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1
 robocopy "%GAME%\_patch\SystemLocalized\int" "%GAME%\System" *.int /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1
 robocopy "%GAME%\_patch\Textures" "%GAME%\Textures" /E /NFL /NDL /NJH /NJS /NP >> "%LOG%" 2>&1
-mkdir "%GAME%\Maps" "%GAME%\Sounds" "%GAME%\Music" 2>nul
+rmdir /s /q "%GAME%\_patch"
+
+:commonfiles
+mkdir "%GAME%\Maps" "%GAME%\Sounds" "%GAME%\Music" "%GAME%\Textures" 2>nul
 copy /y "%GAME%\System\Default.ini" "%GAME%\System\UnrealTournament.ini" >nul
 copy /y "%GAME%\System\DefUser.ini" "%GAME%\System\User.ini" >nul
-rmdir /s /q "%GAME%\_patch"
 if exist "%GAME%\System\UnrealTournament.ini" goto built
 call :fail "Something went wrong while copying the game files." "Please start UT Millenium again. If it happens again, your disk may be full."
 goto problem
 :built
-echo(  %ESC%[93m[3/4]%ESC%[0m Game folder ready (your Steam files were only read, not changed).
+echo(  %ESC%[93m[3/4]%ESC%[0m Game folder ready (your Unreal Tournament files were only read, not changed).
 
 set "UTM_GAME=%GAME%"
 %PS% "iex (Get-Content -Raw -LiteralPath '%MOD%\autotaunt.txt')" >> "%LOG%" 2>&1
@@ -304,10 +325,13 @@ exit /b 0
 
 rem  Remember a problem in plain words (shown by :problem).
 :fail
-> "%ERRFILE%" echo %~1
->> "%ERRFILE%" echo %~2
-echo PROBLEM: %~1 %~2>> "%LOG%"
-exit /b 0
+> "%ERRFILE%" type nul
+:failline
+if "%~1"=="" exit /b 0
+>> "%ERRFILE%" echo(%~1
+>> "%LOG%" echo PROBLEM: %~1
+shift
+goto failline
 
 rem  From the silent part: open a window that explains the problem.
 :showproblem
@@ -315,7 +339,7 @@ start "UT Millenium" "%ComSpec%" /c ""%~f0" /problem"
 exit /b 0
 
 :problem
-mode con: cols=80 lines=26 >nul 2>&1
+mode con: cols=80 lines=36 >nul 2>&1
 call :banner
 echo(  %ESC%[91mSorry, something went wrong.%ESC%[0m
 echo.
@@ -344,6 +368,19 @@ for /f "usebackq delims=" %%P in (`%PS% "iex (Get-Content -Raw -LiteralPath '%MO
 exit /b 0
 
 rem  errorlevel 0 = the zip exists and its SHA-256 matches the official file
+rem  H = SHA256 of a file (empty if it's missing)
+:hashof
+set "H="
+if not exist "%~1" exit /b 1
+for /f "delims=" %%H in ('certutil -hashfile "%~1" SHA256 ^| findstr /v ":"') do (
+  set "H=%%H"
+  goto hashdone
+)
+exit /b 1
+:hashdone
+set "H=%H: =%"
+exit /b 0
+
 :checkzip
 if not exist "%~1" exit /b 1
 for /f "delims=" %%H in ('certutil -hashfile "%~1" SHA256 ^| findstr /v ":"') do (

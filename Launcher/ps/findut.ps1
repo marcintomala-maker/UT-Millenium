@@ -1,4 +1,5 @@
-# Prints the first folder that looks like Unreal Tournament (Steam first).
+# Prints the first folder that looks like Unreal Tournament
+# (Steam first, then GOG, then common folders).
 $c = @()
 $k = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 13240'
 foreach ($r in @($k, 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 13240')) {
@@ -21,6 +22,27 @@ if ($s -and $s.SteamPath) {
                     $c += (Join-Path $lib 'steamapps\common\Unreal Tournament')
                 }
             }
+        }
+    }
+}
+# GOG (and anything else that registered an uninstaller called Unreal Tournament)
+foreach ($root in @('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
+                    'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall',
+                    'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall')) {
+    foreach ($key in (Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue)) {
+        $p = Get-ItemProperty -LiteralPath $key.PSPath -ErrorAction SilentlyContinue
+        if ($p -and $p.DisplayName -and $p.InstallLocation -and ($p.DisplayName -like 'Unreal Tournament*') -and
+            ($p.DisplayName -notmatch '200[34]|Tournament 3|Tournament 4')) {
+            $c += $p.InstallLocation
+        }
+    }
+}
+foreach ($root in @('HKLM:\SOFTWARE\WOW6432Node\GOG.com\Games', 'HKLM:\SOFTWARE\GOG.com\Games')) {
+    foreach ($key in (Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue)) {
+        $p = Get-ItemProperty -LiteralPath $key.PSPath -ErrorAction SilentlyContinue
+        if ($p -and $p.gameName -and $p.path -and ($p.gameName -like 'Unreal Tournament*') -and
+            ($p.gameName -notmatch '200[34]|Tournament 3|Tournament 4')) {
+            $c += $p.path
         }
     }
 }

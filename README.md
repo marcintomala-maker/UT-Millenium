@@ -27,9 +27,15 @@ Games files and never changes your Steam install.
 ## Install (players)
 
 1. Right-click the downloaded zip, open Properties and tick **Unblock**. Then unzip it anywhere.
-2. Run `UT Millenium Launcher` and confirm your Unreal Tournament folder (found automatically for Steam).
+2. Run `UT Millenium Launcher` and confirm your Unreal Tournament folder. Steam
+   and GOG installs are found automatically (registry, Steam libraries, then the
+   usual folders on drives C to H); otherwise drag the folder into the window.
 3. The launcher downloads the free OldUnreal 469e patch (101 MB, checksum
-   verified) and builds a private `Game` folder next to itself.
+   verified) and builds a private `Game` folder in `UT Millenium Data`. If the
+   UT install already runs 469e, its files are used and nothing is downloaded.
+   Offline: put `OldUnreal-UTPatch469e-Windows-x86.zip` in Downloads first.
+4. It creates a "UT Millenium" Desktop shortcut with the UT icon. Later starts
+   show a small LOADING window that closes when the menu is up.
 
 `UT Millenium Launcher.cmd /setup` redoes the setup (for example after moving UT).
 
