@@ -37,6 +37,10 @@ var config string LastMap;
 // Set by the ADD MAPS button; the launcher picks it up after the game closes
 var config bool   bAddMapsRequest;
 
+// Which version of the UT Millenium default settings (keys, volumes,
+// brightness) was applied already. Applied once, later changes are the player's.
+var config int    DefaultsVersion;
+
 // Window geometry (written by the launcher, which knows the desktop size)
 var config int    PortraitX, PortraitY;
 var config int    DesktopX, DesktopY;
@@ -115,9 +119,10 @@ defaultproperties
 	bOrigSpeed=False
 	bMaxBots=False
 	bMuted=False
-	SavedMusicVolume=160
-	SavedSoundVolume=200
-	SavedSpeechVolume=255
+	SavedMusicVolume=204
+	SavedSoundVolume=204
+	SavedSpeechVolume=179
+	DefaultsVersion=0
 	ModeOn(0)=1
 	ModeOn(1)=1
 	ModeOn(2)=1

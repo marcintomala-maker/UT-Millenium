@@ -24,14 +24,36 @@ if ($s -and $s.SteamPath) {
         }
     }
 }
-$c += @('C:\Steam\steamapps\common\Unreal Tournament',
-        'C:\Program Files (x86)\Steam\steamapps\common\Unreal Tournament',
-        'C:\Program Files\Steam\steamapps\common\Unreal Tournament',
-        'D:\Steam\steamapps\common\Unreal Tournament',
-        'D:\SteamLibrary\steamapps\common\Unreal Tournament',
-        'E:\SteamLibrary\steamapps\common\Unreal Tournament',
-        'C:\GOG Games\Unreal Tournament GOTY',
-        'C:\UnrealTournament')
+# Common places on every drive (C, D, E, F, G, H).
+$folders = @(
+    'Steam\steamapps\common\Unreal Tournament',
+    'SteamLibrary\steamapps\common\Unreal Tournament',
+    'Steam Library\steamapps\common\Unreal Tournament',
+    'Program Files (x86)\Steam\steamapps\common\Unreal Tournament',
+    'Program Files\Steam\steamapps\common\Unreal Tournament',
+    'Games\Steam\steamapps\common\Unreal Tournament',
+    'Games\SteamLibrary\steamapps\common\Unreal Tournament',
+    'GOG Games\Unreal Tournament GOTY',
+    'GOG Games\Unreal Tournament',
+    'GOG Galaxy\Games\Unreal Tournament GOTY',
+    'Program Files (x86)\GOG Galaxy\Games\Unreal Tournament GOTY',
+    'Program Files (x86)\GOG.com\Unreal Tournament GOTY',
+    'Games\Unreal Tournament GOTY',
+    'Games\Unreal Tournament',
+    'Games\UnrealTournament',
+    'Program Files (x86)\Unreal Tournament',
+    'Program Files\Unreal Tournament',
+    'Program Files (x86)\UnrealTournament',
+    'Program Files\UnrealTournament',
+    'Unreal Tournament',
+    'UnrealTournament',
+    'UT99',
+    'UT')
+foreach ($drv in @('C', 'D', 'E', 'F', 'G', 'H')) {
+    if (Test-Path -LiteralPath ($drv + ':\')) {
+        foreach ($f in $folders) { $c += ($drv + ':\' + $f) }
+    }
+}
 foreach ($d in $c) {
     if ($d -and (Test-Path -LiteralPath (Join-Path $d 'System\Botpack.u')) -and (Test-Path -LiteralPath (Join-Path $d 'Maps\CTF-Face.unr'))) {
         Write-Output $d

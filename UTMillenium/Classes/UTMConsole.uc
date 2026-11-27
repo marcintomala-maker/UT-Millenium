@@ -17,6 +17,7 @@ var bool   bBriefing;         // pre-match board is up
 var float  BriefingAge;
 var float  CursorFixTime;     // re-show the Windows cursor after a mode switch
 var localized string SkipText;
+var bool   bStarted;
 
 const MODE_LOADING = -1;
 const MODE_MENU = 0;
@@ -55,6 +56,14 @@ event Tick( float Delta )
 
 	if ( Viewport == None || Viewport.Actor == None || Viewport.Actor.Level == None )
 		return;
+	if ( !bStarted )
+	{
+		bStarted = true;
+		Viewport.Actor.ConsoleCommand("HideLog");       // no UT log window
+		class'Ladder'.default.HasBeatenGame = true;     // Xan is playable from the start
+		if ( class'UTMSettings'.default.DefaultsVersion < 1 )
+			ApplyDefaults();
+	}
 	if ( bBriefing )
 		BriefingAge += Delta;
 	// Switching between fullscreen and the window can leave the Windows cursor
@@ -111,6 +120,69 @@ function EnterLevel(int M)
 			bNoDrawWorld = false;
 			break;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// UT Millenium defaults, applied once: modern keys, volumes, brightness.
+
+function Bind(string Key, string Command)
+{
+	Viewport.Actor.ConsoleCommand("SET Input "$Key$" "$Command);
+}
+
+function ApplyDefaults()
+{
+	local int i;
+	local PlayerPawn P;
+
+	P = Viewport.Actor;
+	Log("UTM applying default settings");
+	// WSAD + C, numbers for weapons (as in the original)
+	Bind("W", "MoveForward");
+	Bind("S", "MoveBackward");
+	Bind("A", "StrafeLeft");
+	Bind("D", "StrafeRight");
+	Bind("C", "Duck");
+	Bind("Space", "Jump");
+	Bind("LeftMouse", "Fire");
+	Bind("RightMouse", "AltFire");
+	for ( i = 1; i <= 9; i++ )
+		Bind(string(i), "SwitchWeapon "$i);
+	Bind("0", "SwitchWeapon 10");
+	// no joystick / controller
+	for ( i = 1; i <= 16; i++ )
+		Bind("Joy"$i, "");
+	Bind("JoyX", "");
+	Bind("JoyY", "");
+	Bind("JoyZ", "");
+	Bind("JoyR", "");
+	Bind("JoyU", "");
+	Bind("JoyV", "");
+	Bind("JoySlider1", "");
+	Bind("JoySlider2", "");
+	Bind("JoyPovUp", "");
+	Bind("JoyPovDown", "");
+	Bind("JoyPovLeft", "");
+	Bind("JoyPovRight", "");
+	P.ConsoleCommand("set ini:Engine.Engine.ViewportManager UseJoystick False");
+
+	// volume sliders: music and effects at 80%, voices at 70%
+	if ( !class'UTMSettings'.default.bMuted )
+	{
+		SetVolume("MusicVolume", 204);
+		SetVolume("SoundVolume", 204);
+		SetVolume("SpeechVolume", 179);
+	}
+	class'UTMSettings'.default.SavedMusicVolume = 204;
+	class'UTMSettings'.default.SavedSoundVolume = 204;
+	class'UTMSettings'.default.SavedSpeechVolume = 179;
+
+	// brightness 0.8
+	P.ConsoleCommand("set ini:Engine.Engine.ViewportManager Brightness 0.8");
+	P.ConsoleCommand("flush");
+
+	class'UTMSettings'.default.DefaultsVersion = 1;
+	class'UTMSettings'.static.Save();
 }
 
 //-----------------------------------------------------------------------------
@@ -285,6 +357,16 @@ state UWindow
 		}
 		return Super.KeyEvent(Key, Action, Delta);
 	}
+}
+
+// Leave the running match and go back to the main menu (nothing is
+// counted as a win or a loss).
+function QuitMatch()
+{
+	if ( !bMatchPaused )
+		return;
+	bMatchPaused = false;
+	GoToMenu();
 }
 
 function ResumeMatch()

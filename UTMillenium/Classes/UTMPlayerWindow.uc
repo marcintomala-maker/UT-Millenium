@@ -4,6 +4,12 @@
 //=============================================================================
 class UTMPlayerWindow extends UTPlayerWindow;
 
+function BeginPlay()
+{
+	Super.BeginPlay();
+	ClientClass = class'UTMPlayerClient';
+}
+
 function SetSizePos()
 {
 	SetSize(Root.WinWidth - 10, Root.WinHeight - 20);
@@ -11,14 +17,9 @@ function SetSizePos()
 	WinTop = int((Root.WinHeight - WinHeight) / 2);
 }
 
-function Resized()
-{
-	Super.Resized();
-	if ( UMenuPlayerClientWindow(ClientArea) != None && UMenuPlayerClientWindow(ClientArea).Splitter != None )
-		UMenuPlayerClientWindow(ClientArea).Splitter.SplitPos = int(ClientArea.WinWidth * 0.64);
-}
 
 defaultproperties
 {
 	bSizable=False
+	ClientClass=class'UTMPlayerClient'
 }

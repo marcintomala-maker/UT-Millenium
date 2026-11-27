@@ -6,7 +6,7 @@ class UTMMainWindow extends UWindowDialogClientWindow;
 
 var UTMPlateButton BtnTier[3];
 var UTMPlateButton BtnSettings, BtnCredits, BtnIntro, BtnOutro;
-var UTMPlateButton BtnMute, BtnExit, BtnReset, BtnAddMaps;
+var UTMPlateButton BtnMute, BtnExit, BtnReset, BtnAddMaps, BtnQuitMatch;
 var UTMCheck ChkSpeed, ChkMaxBots, ChkTwoTeams;
 var UWindowMessageBox ResetBox, NoMapsBox, AddMapsBox;
 
@@ -22,7 +22,7 @@ var localized string SpeedText, SpeedTip, MaxBotsText, MaxBotsTip, TwoTeamsText,
 var localized string SettingsText, CreditsText, IntroText, OutroText;
 var localized string MuteText, UnmuteText, ExitText, ResetText;
 var localized string ResetTitle, ResetQuestion, NoMapsTitle, NoMapsText;
-var localized string InProgressText, InProgressHint;
+var localized string InProgressText, InProgressHint, QuitMatchText;
 var localized string AddMapsText, AddMapsTitle, AddMapsQuestion;
 
 //-----------------------------------------------------------------------------
@@ -90,6 +90,8 @@ function Created()
 	BtnExit     = MakeButton(ExitText);
 	BtnReset    = MakeButton(ResetText);
 	BtnAddMaps  = MakeButton(AddMapsText);
+	BtnQuitMatch = MakeButton(QuitMatchText);
+	BtnQuitMatch.HideWindow();
 
 	LogoTex[0] = Texture(DynamicLoadObject("Logo.UTLogo1", class'Texture'));
 	LogoTex[1] = Texture(DynamicLoadObject("Logo.UTLogo2", class'Texture'));
@@ -134,8 +136,19 @@ function BeforePaint(Canvas C, float X, float Y)
 	Place(BtnReset,   290, 274, 52, 18);
 
 	bInMatch = UTMConsole(Root.Console) != None && UTMConsole(Root.Console).bMatchPaused;
+	Place(BtnQuitMatch, 100, 404, 160, 38);
 	for ( i = 0; i < 3; i++ )
+	{
 		BtnTier[i].bDisabled = bInMatch;
+		if ( bInMatch && BtnTier[i].bWindowVisible )
+			BtnTier[i].HideWindow();
+		else if ( !bInMatch && !BtnTier[i].bWindowVisible )
+			BtnTier[i].ShowWindow();
+	}
+	if ( bInMatch && !BtnQuitMatch.bWindowVisible )
+		BtnQuitMatch.ShowWindow();
+	else if ( !bInMatch && BtnQuitMatch.bWindowVisible )
+		BtnQuitMatch.HideWindow();
 	BtnIntro.bDisabled = bInMatch;
 	BtnOutro.bDisabled = bInMatch;
 	BtnAddMaps.bDisabled = bInMatch;
@@ -234,10 +247,10 @@ function Paint(Canvas C, float X, float Y)
 	SetColor(C, 255, 255, 255);
 	for ( i = 0; i < 3; i++ )
 		if ( LogoTex[i] != None )
-			DrawStretchedTexture(C, OX + (36 + i*96)*S, OY + 2*S, 96*S, 96*S, LogoTex[i]);
+			DrawStretchedTexture(C, OX + (48 + i*88)*S, OY, 88*S, 88*S, LogoTex[i]);
 
 	SetColor(C, 255, 190, 0);
-	DrawCentered(C, "MILLENIUM", 180, 92, 24);
+	DrawCentered(C, "MILLENIUM", 180, 97, 24);
 
 	// the big one: winning streak
 	DrawBox(C, 16, 124, 328, 98, 40);
@@ -267,6 +280,17 @@ function Paint(Canvas C, float X, float Y)
 	// match section
 	SetColor(C, 255, 255, 255);
 	DrawCentered(C, "MATCH", 180, 298, 14);
+
+	// "match in progress" plate instead of the match buttons
+	if ( UTMConsole(Root.Console) != None && UTMConsole(Root.Console).bMatchPaused )
+	{
+		DrawBox(C, 40, 322, 280, 130, 255);
+		SetColor(C, 255, 210, 40);
+		DrawCentered(C, InProgressText, 180, 336, 18);
+		SetColor(C, 220, 220, 220);
+		DrawCentered(C, InProgressHint, 180, 370, 11);
+		SetColor(C, 255, 255, 255);
+	}
 
 	SetColor(C, 255, 255, 255);
 }
@@ -332,15 +356,6 @@ function AfterPaint(Canvas C, float X, float Y)
 	Super.AfterPaint(C, X, Y);
 
 	// "match in progress" plate on top of the greyed match buttons
-	if ( UTMConsole(Root.Console) != None && UTMConsole(Root.Console).bMatchPaused )
-	{
-		DrawBox(C, 40, 344, 280, 80, 255);
-		SetColor(C, 255, 210, 40);
-		DrawCentered(C, InProgressText, 180, 356, 18);
-		SetColor(C, 220, 220, 220);
-		DrawCentered(C, InProgressHint, 180, 392, 11);
-		SetColor(C, 255, 255, 255);
-	}
 
 	// tooltip: word-wrapped to the box, box sized to the text
 	if ( TipText != "" )
@@ -435,6 +450,8 @@ function Notify(UWindowDialogControl C, byte E)
 			Con.ToggleMute();
 		else if ( C == BtnExit )
 			Root.DoQuitGame();
+		else if ( C == BtnQuitMatch && Con != None )
+			Con.QuitMatch();
 		else if ( C == BtnAddMaps )
 			AddMapsBox = MessageBox(AddMapsTitle, AddMapsQuestion, MB_YesNo, MR_No, MR_Yes);
 		else if ( C == BtnReset )
@@ -495,4 +512,5 @@ defaultproperties
 	AddMapsQuestion="UT Millenium will close for a moment so you can pick a folder with maps (zip files are fine). It copies all maps from there and starts again. Continue?"
 	InProgressText="MATCH IN PROGRESS"
 	InProgressHint="Press ESC to return to game"
+	QuitMatchText="QUIT MATCH"
 }

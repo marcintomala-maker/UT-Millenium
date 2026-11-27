@@ -94,6 +94,29 @@ function Paint(Canvas C, float MouseX, float MouseY)
 		DrawStretchedTexture(C, 0, 0, WinWidth, WinHeight, Texture'UMenu.MenuBlack');
 }
 
+// Our own cursor: UT's arrow is always drawn by the game itself, so the menu
+// never ends up without a pointer after a switch between the fullscreen match
+// and the small menu window (Windows sometimes keeps its own cursor hidden).
+function DrawMouse(Canvas C)
+{
+	local float X, Y;
+
+	if ( Console.Viewport.bWindowsMouseAvailable )
+		Console.Viewport.SelectedCursor = MouseWindow.Cursor.WindowsCursor;
+	if ( MouseWindow.Cursor.tex == None )
+		return;
+	X = MouseX * GUIScale - MouseWindow.Cursor.HotX;
+	Y = MouseY * GUIScale - MouseWindow.Cursor.HotY;
+	C.Style = 2;   // masked
+	C.DrawColor.R = 255;
+	C.DrawColor.G = 255;
+	C.DrawColor.B = 255;
+	C.bNoSmooth = True;
+	C.SetPos(X, Y);
+	C.DrawIcon(MouseWindow.Cursor.tex, 1.0);
+	C.Style = 1;
+}
+
 function DoQuitGame()
 {
 	class'UTMSettings'.static.Save();

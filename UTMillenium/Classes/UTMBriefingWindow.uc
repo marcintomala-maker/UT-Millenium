@@ -75,7 +75,7 @@ function Prepare()
 	if ( MapTitle == "" || MapTitle ~= "Untitled" )
 		MapTitle = string(L.Outer.Name);
 	MapAuthor = L.Author;
-	MapFile = string(L.Outer.Name)$".unr";
+	MapFile = string(L.Outer.Name);
 	MapPlayers = L.IdealPlayerCount;
 	Shot = L.Screenshot;
 
@@ -216,6 +216,19 @@ function float WrapText(Canvas C, float X, float Y, float W, string Text, option
 	return Y + 4;
 }
 
+// faint TV static (the same filter as on the map screenshot), fitted into a
+// panel of the board art
+function TVStatic(Canvas C, float X, float Y, float W, float H, int Frame)
+{
+	if ( StaticTex[0] == None )
+		return;
+	C.Style = 3;
+	SetColor(C, 16, 16, 16);
+	BX(C, X, Y, W, H, StaticTex[(int(Age * 20) + Frame) % 4]);
+	C.Style = 1;
+	SetColor(C, 255, 255, 255);
+}
+
 function SetColor(Canvas C, byte R, byte G, byte B)
 {
 	C.DrawColor.R = R; C.DrawColor.G = G; C.DrawColor.B = B;
@@ -234,6 +247,11 @@ function Paint(Canvas C, float X, float Y)
 	OX = (WinWidth - 1024 * S) / 2;
 	OY = (WinHeight - 768 * S) / 2;
 
+	// a very light flicker, like an old monitor
+	Flick = 0.95 + 0.05 * FRand();
+	if ( FRand() < 0.02 )
+		Flick = 0.88;
+
 	SetColor(C, 255, 255, 255);
 	DrawStretchedTexture(C, 0, 0, WinWidth, WinHeight, Texture'UMenu.MenuBlack');
 	for ( i = 0; i < 12; i++ )
@@ -242,8 +260,9 @@ function Paint(Canvas C, float X, float Y)
 
 	// game mode in the top plate
 	C.Font = class'UTMMainWindow'.static.PickFont(Root, 34 * S);
-	SetColor(C, 255, 210, 40);
+	SetColor(C, byte(255 * Flick), byte(210 * Flick), byte(40 * Flick));
 	TextCentered(C, 252, 70, ModeTitle);
+	TVStatic(C, 74, 62, 360, 52, 1);
 
 	// map screenshot in the big screen
 	if ( Shot != None )
@@ -251,10 +270,6 @@ function Paint(Canvas C, float X, float Y)
 		SW = 320; SH = 320;
 		if ( Shot.USize > Shot.VSize )
 			SH = 320 * Shot.VSize / Shot.USize;
-		// a very light flicker, like an old monitor
-		Flick = 0.95 + 0.05 * FRand();
-		if ( FRand() < 0.02 )
-			Flick = 0.88;
 		SetColor(C, byte(255 * Flick), byte(255 * Flick), byte(255 * Flick));
 		BX(C, 767 - SW/2, 247 - SH/2, SW, SH, Shot);
 		// faint TV static on top
@@ -275,7 +290,7 @@ function Paint(Canvas C, float X, float Y)
 
 	// objectives on the red grid
 	C.Font = class'UTMMainWindow'.static.PickFont(Root, 24 * S);
-	SetColor(C, 255, 210, 40);
+	SetColor(C, byte(255 * Flick), byte(210 * Flick), byte(40 * Flick));
 	TextAt(C, 172, 262, "OBJECTIVES");
 	// pick the biggest font that still fits the red panel (bottom ~ y 640)
 	for ( FontSize = 16; FontSize > 9; FontSize -= 2 )
@@ -287,14 +302,15 @@ function Paint(Canvas C, float X, float Y)
 		if ( TY <= 640 )
 			break;
 	}
-	SetColor(C, 235, 235, 235);
+	SetColor(C, byte(235 * Flick), byte(235 * Flick), byte(235 * Flick));
 	TY = 300;
 	for ( i = 0; i < NumLines; i++ )
 		TY = WrapText(C, 172, TY, 200, Lines[i]);
+	TVStatic(C, 162, 256, 226, 400, 2);
 
 	// map info in the bottom box
 	C.Font = class'UTMMainWindow'.static.PickFont(Root, 26 * S);
-	SetColor(C, 255, 255, 255);
+	SetColor(C, byte(255 * Flick), byte(255 * Flick), byte(255 * Flick));
 	TextCentered(C, 734, 592, MapTitle);
 	C.Font = class'UTMMainWindow'.static.PickFont(Root, 14 * S);
 	SetColor(C, 170, 170, 170);
@@ -310,6 +326,8 @@ function Paint(Canvas C, float X, float Y)
 	C.Font = class'UTMMainWindow'.static.PickFont(Root, 22 * S);
 	SetColor(C, byte(70 * Blink), byte(160 * Blink), byte(255 * Blink));
 	TextCentered(C, 734, 660, PressText);
+	TVStatic(C, 529, 589, 388, 106, 3);
+	TVStatic(C, 917, 609, 27, 66, 3);
 	SetColor(C, 255, 255, 255);
 }
 

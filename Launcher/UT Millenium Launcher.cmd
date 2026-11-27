@@ -41,8 +41,8 @@ if /i "%~1"=="/setup" goto setup
 if not exist "%GAME%\setup.ok" goto setup
 if not exist "%GAME%\System\UnrealTournament.exe" goto setup
 call :banner
-echo(  %ESC%[93mLoading...%ESC%[0m
 call :starthidden
+call :loadingbar
 exit /b 0
 
 rem --------------------------------------------------------------------------
@@ -56,7 +56,8 @@ echo(  %ESC%[93mFound Unreal Tournament here:%ESC%[0m
 echo.
 echo     %UT%
 echo.
-choice /c YN /n /m "  Is this right? Press Y for yes or N to pick another folder: "
+<nul set /p "=%ESC%[93m  Is this right? Press Y for yes or N to pick another folder: %ESC%[0m"
+choice /c YN /n
 if errorlevel 2 set "UT="
 if defined UT goto haveut
 
@@ -128,6 +129,7 @@ echo(  %ESC%[93m[3/4]%ESC%[0m Game folder ready (your Steam files were only read
 
 set "UTM_GAME=%GAME%"
 %PS% "iex (Get-Content -Raw -LiteralPath '%MOD%\autotaunt.txt')" >> "%LOG%" 2>&1
+call :shortcut
 > "%GAME%\utpath.txt" echo %UT%
 > "%GAME%\setup.ok" echo 1
 echo(  %ESC%[93m[4/4]%ESC%[0m All done!
@@ -136,6 +138,7 @@ echo(  %ESC%[92mStarting UT Millenium... enjoy!%ESC%[0m
 echo setup ok>> "%LOG%"
 timeout /t 2 /nobreak >nul
 call :starthidden
+call :loadingbar
 exit /b 0
 
 rem --------------------------------------------------------------------------
@@ -157,7 +160,7 @@ call :showproblem
 exit /b 1
 :launch
 echo launching>> "%LOG%"
-start "" /wait /d "%GAME%\System" "%GAME%\System\UnrealTournament.exe" %MENU%
+start "" /wait /d "%GAME%\System" "%GAME%\System\UnrealTournament.exe" %MENU% -forcelogflush
 echo game closed>> "%LOG%"
 findstr /i /c:"bAddMapsRequest=True" "%GAME%\System\UTMillenium.ini" >nul 2>&1
 if errorlevel 1 exit /b 0
@@ -215,14 +218,94 @@ if %NMAPS%==0 (echo   No new maps found in the "Add Maps" folder.) else (echo(  
 echo addmaps %NMAPS%>> "%LOG%"
 echo.
 echo   Starting UT Millenium again...
-timeout /t 3 /nobreak >nul
+timeout /t 2 /nobreak >nul
+call :banner
 call :starthidden
+call :loadingbar
 exit /b 0
 
 rem --------------------------------------------------------------------------
 rem  Start the silent part without any window.
 :starthidden
+del /q "%GAME%\System\UnrealTournament.log" >nul 2>&1
+del /q "%ERRFILE%" >nul 2>&1
+if not exist "%GAME%\shortcut.ok" call :shortcut
 %PS% "Start-Process -FilePath $env:ComSpec -ArgumentList ('/c ' + [char]34 + [char]34 + $env:UTM_SELF + [char]34 + ' /hidden' + [char]34) -WindowStyle Hidden" >> "%LOG%" 2>&1
+exit /b 0
+
+rem --------------------------------------------------------------------------
+rem  Old school loading bar. Follows the game's log until the main menu is up.
+:loadingbar
+set "BARFULL=||||||||||||||||||||||||||||||||||||||||"
+set "BAREMPTY=........................................"
+set "LF=%GAME%\System\UnrealTournament.log"
+set /a P=0
+call :now
+set /a T0=NOW
+:lbloop
+rem  GOAL = step the game reached, CAP = how far the bar may creep meanwhile
+set /a GOAL=3, CAP=12
+if exist "%LF%" set /a GOAL=12, CAP=30
+findstr /c:"ngine initialized" "%LF%" >nul 2>&1 && set /a GOAL=30, CAP=55
+findstr /c:"LoadMap: UT-Logo-Map" "%LF%" >nul 2>&1 && set /a GOAL=55, CAP=82
+findstr /c:"Game engine initialized" "%LF%" >nul 2>&1 && set /a GOAL=82, CAP=96
+findstr /c:"UTM EnterLevel mode=0" "%LF%" >nul 2>&1 && set /a GOAL=100, CAP=100
+set /a D=(GOAL-P)/3
+if %D% LSS 1 set /a D=1
+if %P% LSS %GOAL% (set /a P+=D) else if %P% LSS %CAP% set /a P+=1
+if %P% GTR 100 set /a P=100
+call :drawbar
+if %P% GEQ 100 goto lbdone
+if exist "%ERRFILE%" goto lbend
+call :now
+set /a W=NOW-T0
+if %W% LSS 0 set /a W+=8640000
+rem  stop drawing after 2 minutes (the game keeps loading anyway)
+if %W% GTR 12000 goto lbend
+call :nap
+goto lbloop
+:lbdone
+echo.
+echo.
+echo(  %ESC%[92mREADY! Have fun.%ESC%[0m
+timeout /t 1 /nobreak >nul
+:lbend
+exit /b 0
+
+:drawbar
+set /a N=P*40/100, M=40-N
+call set "BA=%%BARFULL:~0,%N%%%"
+call set "BB=%%BAREMPTY:~0,%M%%%"
+if %N%==0 set "BA="
+if %M%==0 set "BB="
+set "PCT=  %P%"
+set "PCT=%PCT:~-3%"
+<nul set /p "=%ESC%[1G%ESC%[2K  %ESC%[93mLOADING  [%BA%%ESC%[90m%BB%%ESC%[93m] %PCT%%%%ESC%[0m"
+exit /b 0
+
+rem  about a quarter of a second (ping to an address that never answers;
+rem  if there's no network at all it fails at once, then wait 1 second)
+:nap
+call :now
+set /a N0=NOW
+ping -n 1 -w 250 192.0.2.1 >nul 2>&1
+call :now
+set /a N1=NOW-N0
+if %N1% LSS 0 set /a N1+=8640000
+if %N1% LSS 10 timeout /t 1 /nobreak >nul
+exit /b 0
+
+rem  NOW = time of day in 1/100 s
+:now
+set "TM=%time: =0%"
+set /a NOW=((1%TM:~0,2%-100)*3600+(1%TM:~3,2%-100)*60+(1%TM:~6,2%-100))*100+(1%TM:~9,2%-100)
+exit /b 0
+
+rem  One time: Desktop shortcut with the Unreal Tournament icon.
+:shortcut
+set "UTM_GAME=%GAME%"
+%PS% "iex (Get-Content -Raw -LiteralPath '%MOD%\shortcut.txt')" >> "%LOG%" 2>&1
+> "%GAME%\shortcut.ok" echo 1
 exit /b 0
 
 rem  Remember a problem in plain words (shown by :problem).
@@ -291,6 +374,7 @@ echo(%ESC%[93m  ^| ^|_^| ^| ^| ^|   ^| ^|  ^| ^|_^| ^|_^| ^|____^| ^|____^| ^|__
 echo(%ESC%[93m   \___/  \_/   \_^|  ^|_/\___/\_____/\_____/\____/\_^| \_/\___/ \___/\_^|  ^|_/%ESC%[0m
 echo(%ESC%[91m  ---------------------------------------------------------------------------%ESC%[0m
 echo(%ESC%[37m                  Quick Play for Unreal Tournament (1999).%ESC%[0m
+echo(%ESC%[93m           INSTA-PLAY  ^|^|^|  INSTA-FRAG  ^|^|^|  INSTA-DOPAMINE%ESC%[0m
 echo(%ESC%[91m  ---------------------------------------------------------------------------%ESC%[0m
 echo(
 exit /b 0

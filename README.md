@@ -10,12 +10,15 @@ Games files and never changes your Steam install.
   from random factions, each with its own random difficulty
   (Easy: Novice to Experienced, Medium: Skilled to Masterful, Hard: Inhuman and Godlike).
 - One match in borderless fullscreen, then straight back to the menu.
-- **ESC** pauses the match and shows the menu ("MATCH IN PROGRESS").
+- **ESC** pauses the match and shows the menu ("MATCH IN PROGRESS", **QUIT MATCH**).
+- A pre-match board (the ladder artwork) with game mode, objectives, teams and map.
 - Stats: winning streak, highest streak, K/D, wins, losses, kills, captures.
 - **Casual Move Speed** (on by default: everybody moves 10% slower, dodges stay
   original) and **Max Bots** (fill the map to its maximum).
 - Settings: brightness, FOV, frame-rate cap, mouse, volumes, key bindings,
-  character, game modes, per-mode map lists, mutators, auto taunt.
+  character (3D preview: drag to rotate, wheel to zoom on the face; Xan unlocked),
+  game modes, per-mode map lists, mutators (with mouse-over descriptions), auto taunt.
+- Modern default keys (WASD, C to crouch, 1-0 for weapons), no joystick options.
 - Mutators: **Chainsaw Zombies**, **Impact Hammer Zombies**, **One Man Army**.
 - **ADD MAPS**: pick a folder of downloaded maps (zips too) and they join the pool.
 - **Play Intro / Play Outro**: the original city intro and the
@@ -51,9 +54,9 @@ install next to `System`, add `EditPackages=UTMillenium` to the
 `Tools/ucc_make_linux.py` runs the 469e `ucc-bin` and answers its v436
 compatibility prompts. UT Millenium targets 469e only.
 
-**Release folder**: `UT Millenium Launcher.cmd` plus a `UT Millenium Data` folder
-with `README.txt` and `Mod/` (`UTMillenium.u`, `UTMillenium.int`, and the
-`Launcher/ps/*.ps1` files renamed to `.txt`).
+**Release folder**: `Tools/make_dist.sh` builds it: `UT Millenium Launcher.cmd`
+plus a `UT Millenium Data` folder with `README.txt` and `Mod/` (`UTMillenium.u`,
+`UTMillenium.int`, and the `Launcher/ps/*.ps1` files renamed to `.txt`).
 
 ## Credits
 
