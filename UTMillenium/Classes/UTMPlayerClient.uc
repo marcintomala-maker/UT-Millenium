@@ -8,6 +8,7 @@ class UTMPlayerClient extends UMenuPlayerClientWindow;
 
 var UWindowVSplitter VSplit;
 var UTMPlayerMeshClient Preview;
+var localized string XanName;
 
 function Created()
 {
@@ -37,7 +38,37 @@ function Resized()
 	}
 }
 
+// The final boss is listed as plain "Boss" in Unreal Tournament's menus;
+// show his name from the game's own story instead.
+function Paint(Canvas C, float X, float Y)
+{
+	local UMenuPlayerSetupClient S;
+
+	Super.Paint(C, X, Y);
+	if ( VSplit != None && UWindowScrollingDialogClient(VSplit.BottomClientWindow) != None )
+		S = UMenuPlayerSetupClient(UWindowScrollingDialogClient(VSplit.BottomClientWindow).ClientArea);
+	if ( S != None )
+	{
+		RenameBoss(S.ClassCombo);
+		RenameBoss(S.SkinCombo);
+	}
+}
+
+function RenameBoss(UWindowComboControl Combo)
+{
+	local UWindowComboListItem I;
+
+	if ( Combo == None || Combo.List == None || Combo.List.Items == None )
+		return;
+	for ( I = UWindowComboListItem(Combo.List.Items.Next); I != None; I = UWindowComboListItem(I.Next) )
+		if ( I.Value == "Boss" )
+			I.Value = XanName;
+	if ( Combo.EditBox != None && Combo.EditBox.Value == "Boss" )
+		Combo.EditBox.Value = XanName;
+}
+
 defaultproperties
 {
+	XanName="Xan Kriegor"
 	PlayerSetupClass=class'UTMenu.UTPlayerSetupScrollClient'
 }
