@@ -16,9 +16,11 @@ event InitGame(string Options, out string Error)
 	else
 		MaxTeams = 2 + Rand(3);   // 2, 3 or 4 teams
 	// the team picked in the Character screen always exists in the match
-	// (Green needs 3 teams, Gold 4); "None" ends up on Red
+	// (Green needs 3 teams, Gold 4); "None" ends up on Red. Characters
+	// without a faction (Xan, Nali...) get a random team instead.
 	PickedTeam = GetIntOption(Options, "Team", 255);
-	if ( !class'UTMSettings'.default.bJustTwoTeams && PickedTeam >= 2 && PickedTeam <= 3 )
+	if ( !class'UTMSettings'.default.bJustTwoTeams && PickedTeam >= 2 && PickedTeam <= 3
+		&& class'UTMCore'.static.FactionForSkin(ParseOption(Options, "Skin")) >= 0 )
 		MaxTeams = Max(MaxTeams, PickedTeam + 1);
 	Super.InitGame(Options, Error);
 	Core = class'UTMCore'.static.Install(self, Options);
@@ -53,6 +55,13 @@ function RestartGame()
 	if ( EndTime > Level.TimeSeconds )
 		return;
 	Core.ReturnToMenu();
+}
+
+function bool ChangeTeam(Pawn Other, int NewTeam)
+{
+	if ( Core != None )
+		NewTeam = Core.TeamFor(Other, NewTeam);
+	return Super.ChangeTeam(Other, NewTeam);
 }
 
 defaultproperties

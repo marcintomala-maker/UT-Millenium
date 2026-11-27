@@ -116,6 +116,7 @@ static function SetMutatorOn(string MutClass, bool bOn)
 
 defaultproperties
 {
+	bJustTwoTeams=True
 	bOrigSpeed=False
 	bMaxBots=True
 	bMuted=False

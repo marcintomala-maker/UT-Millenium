@@ -8,7 +8,7 @@ var UWindowHSliderControl BrightSlider, FovSlider, SensSlider;
 var UWindowHSliderControl MusicSlider, SoundSlider, SpeechSlider, HudSlider;
 var UWindowComboControl FpsCombo;
 var UWindowCheckbox InvertCheck, TauntCheck;
-var UWindowSmallButton KeysButton, CharButton, MutButton;
+var UWindowSmallButton KeysButton, CharButton, MutButton, HudButton;
 var UWindowCheckbox ModeCheck[6];
 var UWindowSmallButton MapsButton[6];
 
@@ -17,7 +17,7 @@ var float Y_Tech, Y_Game, Y_Modes, Y_Mut;
 
 var localized string TechText, GameText, ModesText, MutText;
 var localized string BrightText, FovText, FpsText, SensText, InvertText;
-var localized string MusicText, SoundText, SpeechText, KeysText, HudText;
+var localized string MusicText, SoundText, SpeechText, KeysText, HudText, HudButtonText;
 var localized string CharText, TauntText, MapsText, MutButtonText, MutCountText;
 var localized string UnlimitedText;
 
@@ -103,7 +103,7 @@ function Created()
 
 	HudSlider = MakeSlider(HudText, Y, 1, 5, 1, class'ChallengeHUD'.default.HUDScale * 5);
 	Y += 24;
-	SensSlider = MakeSlider(SensText, Y, 1, 40, 1, P.MouseSensitivity * 4);
+	SensSlider = MakeSlider(SensText, Y, 1, 100, 1, P.MouseSensitivity * 10);
 	Y += 24;
 	InvertCheck = MakeCheck(InvertText, LeftX(), Y, FullW(), P.bInvertMouse);
 	Y += 24;
@@ -119,6 +119,8 @@ function Created()
 		Y += 24;
 	}
 	KeysButton = MakeButton(KeysText, LeftX(), Y, FullW());
+	Y += 24;
+	HudButton = MakeButton(HudButtonText, LeftX(), Y, FullW());
 	Y += 30;
 
 	// ---- In-game
@@ -181,9 +183,18 @@ function BeforePaint(Canvas C, float X, float Y)
 	if ( SpeechSlider != None )
 		SpeechSlider.SliderWidth = (WinWidth - 20) * 0.5;
 	FpsCombo.EditBoxWidth = (WinWidth - 20) * 0.5;
-	SensSlider.SetText(SensText$": "$Left(string(SensSlider.GetValue() / 4.0), 4));
+	SensSlider.SetText(SensText$": "$TenthsText(int(SensSlider.GetValue() + 0.5)));
 	FovSlider.SetText(FovText$": "$int(FovSlider.GetValue()));
 	HudSlider.SetText(HudText$": "$int(HudSlider.GetValue() * 20)$"%");
+}
+
+// 15 -> "1.5"
+function string TenthsText(int V)
+{
+	local int W;
+
+	W = V / 10;
+	return string(W) $ "." $ string(V - W * 10);
 }
 
 function DrawHeader(Canvas C, float Y, string Text)
@@ -259,7 +270,7 @@ function Notify(UWindowDialogControl C, byte E)
 			class'ChallengeHUD'.static.StaticSaveConfig();
 			break;
 		case SensSlider:
-			P.UpdateSensitivity(SensSlider.GetValue() / 4.0);
+			P.UpdateSensitivity(int(SensSlider.GetValue()) / 10.0);
 			P.SaveConfig();
 			break;
 		case InvertCheck:
@@ -296,6 +307,8 @@ function Notify(UWindowDialogControl C, byte E)
 	{
 		if ( C == KeysButton )
 			Root.CreateWindow(class'UTMKeysWindow', 10, 10, 340, 600, OwnerWindow, True);
+		else if ( C == HudButton )
+			Root.CreateWindow(class'UTMHUDWindow', 10, 10, 340, 600, OwnerWindow, True);
 		else if ( C == CharButton )
 			Root.CreateWindow(class'UTMPlayerWindow', 10, 10, 340, 400, OwnerWindow, True);
 		else if ( C == MutButton )
@@ -327,6 +340,7 @@ defaultproperties
 	SoundText="Effects Volume"
 	SpeechText="Voice Volume"
 	KeysText="Key Bindings..."
+	HudButtonText="HUD and Crosshair..."
 	CharText="Character..."
 	TauntText="Auto Taunt"
 	MapsText="Maps"

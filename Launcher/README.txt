@@ -36,12 +36,14 @@ IN THE MENU
   Hard = Inhuman and Godlike. Each bot gets its own random difficulty.
 - Casual Move Speed (on by default): everybody moves 10% slower.
 - Max Bots (on by default): the map is filled with bots up to its maximum.
-- Just Two Teams: Team Deathmatch and Domination always use two teams
-  (otherwise 2, 3 or 4).
-- Your team is the one picked in Settings > Character (Red if it's None).
-  Green and Gold only exist in Team Deathmatch and Domination: there you
-  always get them (the match gets enough teams); in Capture the Flag and
-  Assault, and with Just Two Teams, Green and Gold players play on Red.
+- Just Two Teams (on by default): Team Deathmatch and Domination always use
+  two teams (when it's off: 2, 3 or 4).
+- Your team is the one picked in Settings > Character (Red if it's None),
+  and your teammates come from your character's own faction (wear an
+  Iron Guard skin and you fight alongside the Iron Guard).
+  Green and Gold only exist in Team Deathmatch and Domination with Just Two
+  Teams off: there you always get them; otherwise Green and Gold play on Red.
+  Characters without a faction (Xan, for example) get a random team.
 - Before each match a briefing board shows the game mode, your team,
   the enemies, the objectives and the map. Click or press a key to start.
 - ESC during a match: menu (game paused). ESC again: back to the game.
@@ -49,10 +51,15 @@ IN THE MENU
 - ADD MAPS: put downloaded maps (.unr, .zip or folders) into the
   "Add Maps" folder that opens, then press a key.
 - F9 in the game saves a screenshot into UT Millenium Data\Game\System.
-- SETTINGS: brightness, field of view, frame rate limit, HUD size, mouse,
-  volumes, key bindings, character (drag the 3D preview to rotate it, mouse
+- SETTINGS: brightness, field of view, frame rate limit, HUD size, mouse
+  sensitivity (default 1.5), volumes, key bindings, HUD and crosshair (the
+  original UT page: HUD colors, crosshair style and color), character (drag the 3D preview to rotate it, mouse
   wheel to zoom in on the face), game modes and maps, mutators (hover one to
   read what it does), auto taunt.
+- MUTATORS (Settings > Choose Mutators), besides the original UT ones:
+  Chainsaw Zombies / Impact Hammer Zombies (enemy bots only carry that
+  weapon and hunt you down), One Man Army (team games: everyone against
+  you), Bullet Time (every kill slows time down for 2.5 seconds).
 - PLAY INTRO / PLAY OUTRO: the original intro and the champion's ending.
 
 KEYS (change them in Settings > Key Bindings)

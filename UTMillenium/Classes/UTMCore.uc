@@ -21,6 +21,8 @@ var bool bLeaving;
 var class<RatedTeamInfo> Factions[9];
 var int  TeamFaction[4];               // index into Factions for red / blue / green / gold
 var int  NextMember[4];
+var int  HumanFaction;                 // the player's own faction (from the skin), -1 = none
+var int  HumanTeamWanted;              // the team the player plays on in team games
 var string UsedNames;
 
 var PlayerPawn Human;
@@ -39,7 +41,86 @@ static function UTMCore Install(DeathMatchPlus Game, string Options)
 	C.bSlow = !class'UTMSettings'.default.bOrigSpeed;
 	Game.BaseMutator.AddMutator(C);
 	C.PickFactions();
+	C.PlaceHuman(Options);
 	return C;
+}
+
+// "SoldierSkins.blkt" -> "blkt"
+static function string SkinName(string S)
+{
+	local int i;
+
+	i = InStr(S, ".");
+	while ( i >= 0 )
+	{
+		S = Mid(S, i + 1);
+		i = InStr(S, ".");
+	}
+	return S;
+}
+
+// Which of the 9 Tournament factions wears this skin (-1: nobody, e.g. Xan,
+// Nali or a skin that isn't a team uniform).
+static function int FactionForSkin(string Skin)
+{
+	local int f, n;
+	local class<RatedTeamInfo> RT;
+
+	Skin = SkinName(Skin);
+	if ( Skin == "" )
+		return -1;
+	for ( f = 0; f < 9; f++ )
+	{
+		RT = default.Factions[f];
+		if ( RT == None )
+			continue;
+		if ( Skin ~= SkinName(RT.default.MaleSkin) || Skin ~= SkinName(RT.default.FemaleSkin) )
+			return f;
+		for ( n = 0; n < 8; n++ )
+			if ( RT.default.BotSkins[n] != "" && Skin ~= SkinName(RT.default.BotSkins[n]) )
+				return f;
+	}
+	return -1;
+}
+
+// Team games: the player plays on the team picked in the Character screen
+// (Red for None or a team this match doesn't have), with teammates from the
+// player's own faction. Characters without a faction get a random team.
+function PlaceHuman(string Options)
+{
+	local int T, k, Tmp;
+
+	HumanFaction = FactionForSkin(G.ParseOption(Options, "Skin"));
+	if ( !G.bTeamGame )
+		return;
+	if ( HumanFaction < 0 )
+		HumanTeamWanted = Rand(NumTeams());
+	else
+	{
+		T = G.GetIntOption(Options, "Team", 255);
+		if ( T < 0 || T >= NumTeams() )
+			T = 0;
+		HumanTeamWanted = T;
+		for ( k = 0; k < 4; k++ )
+			if ( TeamFaction[k] == HumanFaction )
+				break;
+		if ( k < 4 )
+		{
+			Tmp = TeamFaction[k];
+			TeamFaction[k] = TeamFaction[HumanTeamWanted];
+			TeamFaction[HumanTeamWanted] = Tmp;
+		}
+		else
+			TeamFaction[HumanTeamWanted] = HumanFaction;
+	}	Log("UTM player faction="$HumanFaction$" team="$HumanTeamWanted$" of "$NumTeams());
+}
+
+// Called from the team games' ChangeTeam: keeps the player on their team.
+function int TeamFor(Pawn Other, int NewTeam)
+{
+	if ( PlayerPawn(Other) != None && Bot(Other) == None && !Other.IsA('Spectator') && G.bTeamGame )
+		return HumanTeamWanted;
+	return NewTeam;
 }
 
 function PickFactions()

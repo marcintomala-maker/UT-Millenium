@@ -16,10 +16,13 @@ Games files and never changes your Steam install.
 - **Casual Move Speed** (on by default: everybody moves 10% slower, dodges stay
   original) and **Max Bots** (fill the map to its maximum).
 - Settings: brightness, FOV, frame-rate cap, mouse, volumes, key bindings,
-  character (3D preview: drag to rotate, wheel to zoom on the face; Xan unlocked),
+  HUD and crosshair (original UT page), character (3D preview: drag to rotate, wheel to zoom on the face; Xan unlocked),
   game modes, per-mode map lists, mutators (with mouse-over descriptions), auto taunt.
 - Modern default keys (WASD, C to crouch, 1-0 for weapons), no joystick options.
-- Mutators: **Chainsaw Zombies**, **Impact Hammer Zombies**, **One Man Army**.
+- Mutators: **Chainsaw Zombies**, **Impact Hammer Zombies**, **One Man Army**,
+  **Bullet Time** (each kill slows time to 30% for 2.5 real seconds).
+- Team games: you play on the team picked in the Character screen, with teammates
+  from your character's faction; characters without a faction get a random team.
 - **ADD MAPS**: pick a folder of downloaded maps (zips too) and they join the pool.
 - **Play Intro / Play Outro**: the original city intro and the
   Tournament-winner ending with your character.

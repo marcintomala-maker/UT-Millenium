@@ -65,6 +65,15 @@ event Tick( float Delta )
 			ApplyDefaults();
 		if ( class'UTMSettings'.default.DefaultsVersion < 2 )
 			ApplyDefaults2();
+		if ( class'UTMSettings'.default.DefaultsVersion < 3 )
+		{
+			// Just Two Teams on, mouse sensitivity 1.5
+			class'UTMSettings'.default.bJustTwoTeams = true;
+			Viewport.Actor.UpdateSensitivity(1.5);
+			Viewport.Actor.SaveConfig();
+			class'UTMSettings'.default.DefaultsVersion = 3;
+			class'UTMSettings'.static.Save();
+		}
 	}
 	if ( bBriefing )
 		BriefingAge += Delta;

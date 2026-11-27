@@ -52,6 +52,13 @@ function ScoreFlag(Pawn Scorer, CTFFlag theFlag)
 	Super.ScoreFlag(Scorer, theFlag);
 }
 
+function bool ChangeTeam(Pawn Other, int NewTeam)
+{
+	if ( Core != None )
+		NewTeam = Core.TeamFor(Other, NewTeam);
+	return Super.ChangeTeam(Other, NewTeam);
+}
+
 defaultproperties
 {
 	GameName="UT Millenium Capture the Flag"
