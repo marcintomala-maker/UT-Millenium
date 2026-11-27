@@ -163,7 +163,7 @@ function int HumanTeam()
 {
 	if ( FindHuman() == None || Human.PlayerReplicationInfo == None )
 		return 0;
-	if ( Human.PlayerReplicationInfo.Team > 1 )
+	if ( Human.PlayerReplicationInfo.Team >= 4 )
 		return 0;
 	return Human.PlayerReplicationInfo.Team;
 }

@@ -7,12 +7,19 @@ var UTMCore Core;
 
 event InitGame(string Options, out string Error)
 {
+	local int PickedTeam;
+
 	GoalTeamScore = 100;
 	TimeLimit = 20;
 	if ( class'UTMSettings'.default.bJustTwoTeams )
 		MaxTeams = 2;
 	else
 		MaxTeams = 2 + Rand(3);   // 2, 3 or 4 teams
+	// the team picked in the Character screen always exists in the match
+	// (Green needs 3 teams, Gold 4); "None" ends up on Red
+	PickedTeam = GetIntOption(Options, "Team", 255);
+	if ( !class'UTMSettings'.default.bJustTwoTeams && PickedTeam >= 2 && PickedTeam <= 3 )
+		MaxTeams = Max(MaxTeams, PickedTeam + 1);
 	Super.InitGame(Options, Error);
 	Core = class'UTMCore'.static.Install(self, Options);
 }

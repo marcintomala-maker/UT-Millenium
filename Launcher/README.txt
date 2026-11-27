@@ -35,9 +35,13 @@ IN THE MENU
   Easy = Novice to Experienced bots, Medium = Skilled to Masterful,
   Hard = Inhuman and Godlike. Each bot gets its own random difficulty.
 - Casual Move Speed (on by default): everybody moves 10% slower.
-- Max Bots: the map is filled with bots up to its maximum.
+- Max Bots (on by default): the map is filled with bots up to its maximum.
 - Just Two Teams: Team Deathmatch and Domination always use two teams
   (otherwise 2, 3 or 4).
+- Your team is the one picked in Settings > Character (Red if it's None).
+  Green and Gold only exist in Team Deathmatch and Domination: there you
+  always get them (the match gets enough teams); in Capture the Flag and
+  Assault, and with Just Two Teams, Green and Gold players play on Red.
 - Before each match a briefing board shows the game mode, your team,
   the enemies, the objectives and the map. Click or press a key to start.
 - ESC during a match: menu (game paused). ESC again: back to the game.
@@ -53,7 +57,8 @@ IN THE MENU
 
 KEYS (change them in Settings > Key Bindings)
 - W A S D move, Space jump, C crouch, mouse to aim and shoot.
-- 1 - 0 pick weapons (as in the original), Q translocator, F1 scores.
+- 1 - 0 pick weapons (as in the original), Q translocator.
+- Hold Tab for the scoreboard. T or Enter to chat, Y to chat with your team.
 
 IF SOMETHING GOES WRONG
 - UT Millenium tells you in plain words. Details are in launcher.log here.

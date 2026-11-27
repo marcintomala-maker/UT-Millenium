@@ -2,6 +2,9 @@
 // UTMZombieMutator - base for the "zombie" mutators.
 // Every enemy bot (the other team, or every bot in non-team games) only gets
 // ZombieWeapon and can't pick up any other weapon or ammo.
+// Zombies behave like zombies: they never run away to look for better
+// weapons (that made them stand on pickups they can't take); they always
+// hunt the nearest living player who isn't a zombie.
 //=============================================================================
 class UTMZombieMutator extends Mutator
 	abstract;
@@ -97,8 +100,61 @@ event Tick(float DeltaTime)
 		return;
 	CheckTimer = 0.25;
 	for ( P = Level.PawnList; P != None; P = P.NextPawn )
-		if ( IsZombie(P) && P.Health > 0 && HasOtherWeapon(P) )
-			MakeZombie(P);
+		if ( IsZombie(P) && P.Health > 0 )
+		{
+			if ( HasOtherWeapon(P) )
+				MakeZombie(P);
+			ZombieBrain(Bot(P));
+		}
+}
+
+function Pawn NearestVictim(Bot B)
+{
+	local Pawn P, Best;
+	local float D, BestD;
+
+	for ( P = Level.PawnList; P != None; P = P.NextPawn )
+		if ( P != B && P.bIsPlayer && P.Health > 0 && !P.IsA('Spectator')
+			&& P.PlayerReplicationInfo != None && !IsZombie(P)
+			&& (!Level.Game.bTeamGame || P.PlayerReplicationInfo.Team != B.PlayerReplicationInfo.Team) )
+		{
+			D = VSize(P.Location - B.Location);
+			if ( Best == None || D < BestD )
+			{
+				Best = P;
+				BestD = D;
+			}
+		}
+	return Best;
+}
+
+function ZombieBrain(Bot B)
+{
+	local Pawn V;
+
+	if ( B == None || B.Health <= 0 || B.IsInState('GameEnded') || B.IsInState('Dying') )
+		return;
+	B.bKamikaze = true;        // never afraid: no retreating to weapon pickups
+	B.bMustHunt = true;        // chase enemies it can't see
+	if ( B.Enemy != None && B.Enemy.Health > 0 && !B.Enemy.bDeleteMe )
+	{
+		// shambling back to a pickup instead of fighting? back to the hunt
+		if ( B.IsInState('Retreating') )
+			B.GotoState('Attacking');
+		return;
+	}
+	// no enemy: go after the nearest living non-zombie
+	if ( !(B.IsInState('Roaming') || B.IsInState('Wandering') || B.IsInState('Retreating')
+		|| B.IsInState('StakeOut') || B.IsInState('Waiting')) )
+		return;
+	V = NearestVictim(B);
+	if ( V == None )
+		return;
+	B.Enemy = V;
+	B.LastSeenPos = V.Location;
+	B.LastSeenTime = Level.TimeSeconds;
+	B.bMustHunt = true;
+	B.GotoState('Attacking');
 }
 
 function bool HandlePickupQuery(Pawn Other, Inventory Item, out byte bAllowPickup)

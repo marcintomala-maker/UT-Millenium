@@ -80,7 +80,7 @@ function Prepare()
 	Shot = L.Screenshot;
 
 	MyTeam = 0;
-	if ( P.PlayerReplicationInfo != None && P.PlayerReplicationInfo.Team < 2 )
+	if ( P.PlayerReplicationInfo != None && P.PlayerReplicationInfo.Team < 4 )
 		MyTeam = P.PlayerReplicationInfo.Team;
 
 	if ( G.IsA('Assault') )

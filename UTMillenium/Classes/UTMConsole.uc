@@ -63,6 +63,8 @@ event Tick( float Delta )
 		class'Ladder'.default.HasBeatenGame = true;     // Xan is playable from the start
 		if ( class'UTMSettings'.default.DefaultsVersion < 1 )
 			ApplyDefaults();
+		if ( class'UTMSettings'.default.DefaultsVersion < 2 )
+			ApplyDefaults2();
 	}
 	if ( bBriefing )
 		BriefingAge += Delta;
@@ -182,6 +184,19 @@ function ApplyDefaults()
 	P.ConsoleCommand("flush");
 
 	class'UTMSettings'.default.DefaultsVersion = 1;
+	class'UTMSettings'.static.Save();
+}
+
+// Second set: scoreboard on Tab (hold), chat keys, Max Bots on.
+function ApplyDefaults2()
+{
+	Log("UTM applying default settings 2");
+	Bind("Tab", "ShowScores | OnRelease ShowScores");
+	Bind("T", "Talk");
+	Bind("Y", "TeamTalk");
+	Bind("Enter", "Talk");
+	class'UTMSettings'.default.bMaxBots = true;
+	class'UTMSettings'.default.DefaultsVersion = 2;
 	class'UTMSettings'.static.Save();
 }
 

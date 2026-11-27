@@ -117,7 +117,7 @@ static function SetMutatorOn(string MutClass, bool bOn)
 defaultproperties
 {
 	bOrigSpeed=False
-	bMaxBots=False
+	bMaxBots=True
 	bMuted=False
 	SavedMusicVolume=204
 	SavedSoundVolume=204
