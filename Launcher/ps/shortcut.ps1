@@ -10,6 +10,7 @@ try {
     $s.IconLocation = (Join-Path $env:UTM_GAME 'System\UnrealTournament.exe') + ',0'
     $s.Description = 'UT Millenium - Quick Play for Unreal Tournament'
     $s.Save()
+    Set-Content -LiteralPath (Join-Path $env:UTM_GAME 'shortcut.done') -Value $lnk
     Write-Output ('shortcut ' + $lnk)
 } catch {
     Write-Output ('no shortcut: ' + $_)

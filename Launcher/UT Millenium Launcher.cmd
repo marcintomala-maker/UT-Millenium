@@ -49,6 +49,8 @@ rem --------------------------------------------------------------------------
 :setup
 call :banner
 echo(  %ESC%[93mFIRST TIME SETUP%ESC%[0m
+echo(  It sets up the game in the "UT Millenium Data" folder and puts a
+echo(  "UT Millenium" shortcut on your Desktop.
 echo.
 echo(  Looking for Unreal Tournament: Steam and GOG libraries, Program Files,
 echo(  Games and other common folders on drives C, D, E, F, G and H...
@@ -139,7 +141,10 @@ set "UTM_GAME=%GAME%"
 call :shortcut
 > "%GAME%\utpath.txt" echo %UT%
 > "%GAME%\setup.ok" echo 1
-echo(  %ESC%[93m[4/4]%ESC%[0m All done!
+if exist "%GAME%\shortcut.done" echo(  %ESC%[93m[4/4]%ESC%[0m Desktop shortcut "UT Millenium" (with the UT icon) created.
+if not exist "%GAME%\shortcut.done" echo(  %ESC%[93m[4/4]%ESC%[0m Windows didn't allow a Desktop shortcut - use "UT Millenium Launcher".
+echo.
+echo(  %ESC%[92mAll done!%ESC%[0m
 echo.
 echo(  %ESC%[92mStarting UT Millenium... enjoy!%ESC%[0m
 echo setup ok>> "%LOG%"
